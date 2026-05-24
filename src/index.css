@@ -1,21 +1,20 @@
 @import "tailwindcss";
 
-
 @theme {
-  --color-primary: #0B2545;
-  --color-primary-light: #1E3A5F;
-  --color-primary-tint: #E8EEF5;
-  --color-success: #0F5132;
-  --color-success-tint: #D1E7DD;
-  --color-warning: #8B5A00;
-  --color-warning-tint: #FFF3CD;
+  --color-primary: #0b2545;
+  --color-primary-light: #1e3a5f;
+  --color-primary-tint: #e8eef5;
+  --color-success: #0f5132;
+  --color-success-tint: #d1e7dd;
+  --color-warning: #8b5a00;
+  --color-warning-tint: #fff3cd;
   --color-danger: #842029;
-  --color-danger-tint: #F8D7DA;
-  --color-info: #0B5394;
-  --color-info-tint: #CFE2FF;
-  --color-bg: #FAF7F2;
-  --color-bg-alt: #F2EEE6;
-  --color-border: #DCD7CD;
+  --color-danger-tint: #f8d7da;
+  --color-info: #0b5394;
+  --color-info-tint: #cfe2ff;
+  --color-bg: #faf7f2;
+  --color-bg-alt: #f2eee6;
+  --color-border: #dcd7cd;
 
   --font-sans: "Inter", system-ui, sans-serif;
   --radius-card: 8px;
@@ -24,6 +23,10 @@
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }

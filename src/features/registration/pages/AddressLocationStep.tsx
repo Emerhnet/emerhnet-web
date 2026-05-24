@@ -1,24 +1,24 @@
-import { Controller, useForm, useWatch } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useNavigate } from 'react-router-dom';
-import { useSnackbar } from 'notistack';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import TextField from '@mui/material/TextField';
-import Button from '@mui/material/Button';
-import MenuItem from '@mui/material/MenuItem';
-import Autocomplete from '@mui/material/Autocomplete';
-import LocationOnIcon from '@mui/icons-material/LocationOn';
-import MapIcon from '@mui/icons-material/Map';
-import MyLocationIcon from '@mui/icons-material/MyLocation';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import { INDIAN_STATES } from '@/shared/constants/indianStates';
+import { Controller, useForm, useWatch } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useNavigate } from "react-router-dom";
+import { useSnackbar } from "notistack";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import TextField from "@mui/material/TextField";
+import Button from "@mui/material/Button";
+import MenuItem from "@mui/material/MenuItem";
+import Autocomplete from "@mui/material/Autocomplete";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
+import MapIcon from "@mui/icons-material/Map";
+import MyLocationIcon from "@mui/icons-material/MyLocation";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import { INDIAN_STATES } from "@/shared/constants/indianStates";
 import {
   addressLocationSchema,
   type AddressLocationInput,
-} from '../schemas/addressLocationSchema';
-import { useRegistrationStore } from '../store';
+} from "../schemas/addressLocationSchema";
+import { useRegistrationStore } from "../store";
 
 function FieldLabel({
   htmlFor,
@@ -34,9 +34,9 @@ function FieldLabel({
       component="label"
       htmlFor={htmlFor}
       variant="body2"
-      sx={{ fontWeight: 500, display: 'block', mb: 0.5 }}
+      sx={{ fontWeight: 500, display: "block", mb: 0.5 }}
     >
-      {children} {required && <span style={{ color: '#842029' }}>*</span>}
+      {children} {required && <span style={{ color: "#842029" }}>*</span>}
     </Typography>
   );
 }
@@ -55,53 +55,66 @@ export function AddressLocationStep() {
   } = useForm<AddressLocationInput>({
     resolver: zodResolver(addressLocationSchema),
     defaultValues: {
-      addressLine1: stored.addressLine1 ?? '',
-      addressLine2: stored.addressLine2 ?? '',
-      city: stored.city ?? '',
-      state: stored.state as AddressLocationInput['state'] | undefined,
-      pincode: stored.pincode ?? '',
-      latitude: stored.latitude ?? '',
-      longitude: stored.longitude ?? '',
+      addressLine1: stored.addressLine1 ?? "",
+      addressLine2: stored.addressLine2 ?? "",
+      city: stored.city ?? "",
+      state: stored.state as AddressLocationInput["state"] | undefined,
+      pincode: stored.pincode ?? "",
+      latitude: stored.latitude ?? "",
+      longitude: stored.longitude ?? "",
     },
   });
 
-  const lat = useWatch({ control, name: 'latitude' });
-  const lng = useWatch({ control, name: 'longitude' });
-  const hasPin = lat && lng && !Number.isNaN(Number(lat)) && !Number.isNaN(Number(lng));
+  const lat = useWatch({ control, name: "latitude" });
+  const lng = useWatch({ control, name: "longitude" });
+  const hasPin =
+    lat && lng && !Number.isNaN(Number(lat)) && !Number.isNaN(Number(lng));
 
   const onSubmit = handleSubmit((data) => {
     setAddressLocation(data);
-    navigate('/register-hospital/admin');
+    navigate("/register-hospital/admin");
   });
 
   const useMyLocation = () => {
     if (!navigator.geolocation) {
-      enqueueSnackbar('Geolocation not supported by this browser.', { variant: 'error' });
+      enqueueSnackbar("Geolocation not supported by this browser.", {
+        variant: "error",
+      });
       return;
     }
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        setValue('latitude', pos.coords.latitude.toFixed(4), { shouldValidate: true });
-        setValue('longitude', pos.coords.longitude.toFixed(4), { shouldValidate: true });
+        setValue("latitude", pos.coords.latitude.toFixed(4), {
+          shouldValidate: true,
+        });
+        setValue("longitude", pos.coords.longitude.toFixed(4), {
+          shouldValidate: true,
+        });
       },
-      (err) => enqueueSnackbar(err.message || 'Could not get location.', { variant: 'error' }),
+      (err) =>
+        enqueueSnackbar(err.message || "Could not get location.", {
+          variant: "error",
+        }),
     );
   };
 
   return (
     <Box>
       <Box sx={{ mb: 3 }}>
-        <Typography variant="h1" sx={{ fontSize: 28, fontWeight: 600, color: 'primary.main', mb: 0.5 }}>
+        <Typography
+          variant="h1"
+          sx={{ fontSize: 28, fontWeight: 600, color: "primary.main", mb: 0.5 }}
+        >
           Register your hospital
         </Typography>
-        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+        <Typography variant="body2" sx={{ color: "text.secondary" }}>
           Help us locate your hospital.
         </Typography>
       </Box>
 
       <form onSubmit={onSubmit} noValidate>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
-          <LocationOnIcon sx={{ color: 'primary.main' }} />
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1.5 }}>
+          <LocationOnIcon sx={{ color: "primary.main" }} />
           <Typography variant="h2" sx={{ fontSize: 20, fontWeight: 600 }}>
             Address
           </Typography>
@@ -169,7 +182,7 @@ export function AddressLocationStep() {
                 <Autocomplete
                   options={INDIAN_STATES as readonly string[]}
                   value={field.value ?? null}
-                  onChange={(_, v) => field.onChange(v ?? '')}
+                  onChange={(_, v) => field.onChange(v ?? "")}
                   onBlur={field.onBlur}
                   autoHighlight
                   renderInput={(p) => (
@@ -197,7 +210,7 @@ export function AddressLocationStep() {
                   {...field}
                   id="pincode"
                   placeholder="6 digits"
-                  inputProps={{ inputMode: 'numeric', maxLength: 6 }}
+                  inputProps={{ inputMode: "numeric", maxLength: 6 }}
                   error={!!errors.pincode}
                   helperText={errors.pincode?.message}
                 />
@@ -206,8 +219,10 @@ export function AddressLocationStep() {
           </div>
         </div>
 
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 3, mb: 1.5 }}>
-          <MapIcon sx={{ color: 'primary.main' }} />
+        <Box
+          sx={{ display: "flex", alignItems: "center", gap: 1, mt: 3, mb: 1.5 }}
+        >
+          <MapIcon sx={{ color: "primary.main" }} />
           <Typography variant="h2" sx={{ fontSize: 20, fontWeight: 600 }}>
             Location
           </Typography>
@@ -226,7 +241,7 @@ export function AddressLocationStep() {
                   {...field}
                   id="latitude"
                   placeholder="19.0760"
-                  inputProps={{ inputMode: 'decimal' }}
+                  inputProps={{ inputMode: "decimal" }}
                   error={!!errors.latitude}
                   helperText={errors.latitude?.message}
                 />
@@ -245,7 +260,7 @@ export function AddressLocationStep() {
                   {...field}
                   id="longitude"
                   placeholder="72.8777"
-                  inputProps={{ inputMode: 'decimal' }}
+                  inputProps={{ inputMode: "decimal" }}
                   error={!!errors.longitude}
                   helperText={errors.longitude?.message}
                 />
@@ -256,17 +271,17 @@ export function AddressLocationStep() {
 
         <Box
           sx={{
-            position: 'relative',
+            position: "relative",
             height: 280,
             mt: 2,
             borderRadius: 1,
-            overflow: 'hidden',
-            border: '1px solid',
-            borderColor: 'divider',
-            bgcolor: '#EEF2F5',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
+            overflow: "hidden",
+            border: "1px solid",
+            borderColor: "divider",
+            bgcolor: "#EEF2F5",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
           }}
         >
           {hasPin ? (
@@ -279,12 +294,12 @@ export function AddressLocationStep() {
                 const d = 0.01;
                 return `https://www.openstreetmap.org/export/embed.html?bbox=${lo - d}%2C${la - d}%2C${lo + d}%2C${la + d}&layer=mapnik&marker=${la}%2C${lo}`;
               })()}
-              style={{ border: 0, width: '100%', height: '100%' }}
+              style={{ border: 0, width: "100%", height: "100%" }}
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
             />
           ) : (
-            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+            <Typography variant="body2" sx={{ color: "text.secondary" }}>
               Map preview — enter coordinates to drop pin
             </Typography>
           )}
@@ -293,18 +308,18 @@ export function AddressLocationStep() {
             onClick={useMyLocation}
             startIcon={<MyLocationIcon fontSize="small" />}
             sx={{
-              position: 'absolute',
+              position: "absolute",
               top: 12,
               right: 12,
-              bgcolor: '#FFFFFF',
-              color: 'primary.main',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
+              bgcolor: "#FFFFFF",
+              color: "primary.main",
+              boxShadow: "0 1px 3px rgba(0,0,0,0.15)",
               fontWeight: 600,
-              textTransform: 'none',
+              textTransform: "none",
               borderRadius: 999,
               px: 2,
               zIndex: 1,
-              '&:hover': { bgcolor: '#FFFFFF' },
+              "&:hover": { bgcolor: "#FFFFFF" },
             }}
             size="small"
           >
@@ -316,17 +331,17 @@ export function AddressLocationStep() {
           sx={{
             mt: 4,
             pt: 3,
-            borderTop: '1px solid',
-            borderColor: 'divider',
-            display: 'flex',
-            justifyContent: 'space-between',
+            borderTop: "1px solid",
+            borderColor: "divider",
+            display: "flex",
+            justifyContent: "space-between",
           }}
         >
           <Button
             type="button"
             variant="outlined"
             startIcon={<ArrowBackIcon />}
-            onClick={() => navigate('/register-hospital')}
+            onClick={() => navigate("/register-hospital")}
             sx={{ height: 44, px: 3, fontWeight: 600 }}
           >
             Back

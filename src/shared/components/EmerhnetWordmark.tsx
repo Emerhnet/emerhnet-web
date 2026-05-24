@@ -1,4 +1,4 @@
-import Typography from '@mui/material/Typography';
+import Typography from "@mui/material/Typography";
 
 export function EmerhnetWordmark({ size = 28 }: { size?: number }) {
   return (
@@ -7,8 +7,8 @@ export function EmerhnetWordmark({ size = 28 }: { size?: number }) {
       sx={{
         fontSize: size,
         fontWeight: 700,
-        letterSpacing: '0.02em',
-        color: 'primary.main',
+        letterSpacing: "0.02em",
+        color: "primary.main",
         lineHeight: 1,
       }}
     >

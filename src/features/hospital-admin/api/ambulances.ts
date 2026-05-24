@@ -1,8 +1,17 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { api } from '@/shared/lib/api';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/shared/lib/api";
 
-export type AmbulanceType = 'BLS' | 'ALS' | 'ICU' | 'Neonatal' | 'Patient Transport';
-export type AmbulanceStatus = 'Available' | 'On Duty' | 'Under Maintenance' | 'Out of Service';
+export type AmbulanceType =
+  | "BLS"
+  | "ALS"
+  | "ICU"
+  | "Neonatal"
+  | "Patient Transport";
+export type AmbulanceStatus =
+  | "Available"
+  | "On Duty"
+  | "Under Maintenance"
+  | "Out of Service";
 
 export type ApiAmbulance = {
   id: string;
@@ -27,16 +36,18 @@ export type CreateAmbulanceInput = {
 
 export type UpdateAmbulanceInput = Partial<CreateAmbulanceInput>;
 
-const key = ['ambulances'] as const;
+const key = ["ambulances"] as const;
 
-export function useAmbulances(filters: { search?: string; type?: string; status?: string } = {}) {
+export function useAmbulances(
+  filters: { search?: string; type?: string; status?: string } = {},
+) {
   return useQuery({
     queryKey: [...key, filters] as const,
     queryFn: async () => {
       const params = new URLSearchParams();
-      if (filters.search) params.set('search', filters.search);
-      if (filters.type) params.set('type', filters.type);
-      if (filters.status) params.set('status', filters.status);
+      if (filters.search) params.set("search", filters.search);
+      if (filters.type) params.set("type", filters.type);
+      if (filters.status) params.set("status", filters.status);
       const { data } = await api.get<{ items: ApiAmbulance[]; total: number }>(
         `/ambulances?${params}`,
       );
@@ -49,7 +60,7 @@ export function useCreateAmbulance() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (input: CreateAmbulanceInput) => {
-      const { data } = await api.post<ApiAmbulance>('/ambulances', input);
+      const { data } = await api.post<ApiAmbulance>("/ambulances", input);
       return data;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: key }),
@@ -59,8 +70,17 @@ export function useCreateAmbulance() {
 export function useUpdateAmbulance() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, input }: { id: string; input: UpdateAmbulanceInput }) => {
-      const { data } = await api.patch<ApiAmbulance>(`/ambulances/${id}`, input);
+    mutationFn: async ({
+      id,
+      input,
+    }: {
+      id: string;
+      input: UpdateAmbulanceInput;
+    }) => {
+      const { data } = await api.patch<ApiAmbulance>(
+        `/ambulances/${id}`,
+        input,
+      );
       return data;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: key }),

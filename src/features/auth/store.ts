@@ -1,12 +1,12 @@
-import { create } from 'zustand';
+import { create } from "zustand";
 
 export type AuthUser = {
   id: string;
   email: string;
   fullName: string;
-  role: 'superAdmin' | 'hospitalAdmin';
+  role: "superAdmin" | "hospitalAdmin";
   hospitalId?: string | null;
-  status?: 'active' | 'locked' | 'pendingPasswordSet';
+  status?: "active" | "locked" | "pendingPasswordSet";
   mustChangePassword?: boolean;
 };
 

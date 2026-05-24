@@ -1,5 +1,5 @@
-import { useQuery } from '@tanstack/react-query';
-import { api } from '@/shared/lib/api';
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/shared/lib/api";
 
 export type VerifyInvitationResult = {
   hospitalName: string;
@@ -10,7 +10,7 @@ export type VerifyInvitationResult = {
 
 export function useVerifyInvitation(token: string | null) {
   return useQuery({
-    queryKey: ['invitation', 'verify', token],
+    queryKey: ["invitation", "verify", token],
     queryFn: async () => {
       const { data } = await api.get<VerifyInvitationResult>(
         `/invitations/verify/${token}`,

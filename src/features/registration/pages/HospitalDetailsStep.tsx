@@ -1,24 +1,24 @@
-import { Controller, useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useNavigate } from 'react-router-dom';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import TextField from '@mui/material/TextField';
-import Button from '@mui/material/Button';
-import Link from '@mui/material/Link';
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
-import ToggleButton from '@mui/material/ToggleButton';
-import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
-import BusinessIcon from '@mui/icons-material/Business';
-import VolunteerActivismIcon from '@mui/icons-material/VolunteerActivism';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import { Controller, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useNavigate } from "react-router-dom";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import TextField from "@mui/material/TextField";
+import Button from "@mui/material/Button";
+import Link from "@mui/material/Link";
+import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
+import ToggleButton from "@mui/material/ToggleButton";
+import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
+import BusinessIcon from "@mui/icons-material/Business";
+import VolunteerActivismIcon from "@mui/icons-material/VolunteerActivism";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import {
   HOSPITAL_CATEGORIES,
   hospitalDetailsSchema,
   type HospitalCategory,
   type HospitalDetailsInput,
-} from '../schemas/hospitalDetailsSchema';
-import { useRegistrationStore } from '../store';
+} from "../schemas/hospitalDetailsSchema";
+import { useRegistrationStore } from "../store";
 
 const CATEGORY_ICONS: Record<HospitalCategory, typeof AccountBalanceIcon> = {
   Government: AccountBalanceIcon,
@@ -26,10 +26,23 @@ const CATEGORY_ICONS: Record<HospitalCategory, typeof AccountBalanceIcon> = {
   Trust: VolunteerActivismIcon,
 };
 
-function FieldLabel({ htmlFor, required, children }: { htmlFor?: string; required?: boolean; children: React.ReactNode }) {
+function FieldLabel({
+  htmlFor,
+  required,
+  children,
+}: {
+  htmlFor?: string;
+  required?: boolean;
+  children: React.ReactNode;
+}) {
   return (
-    <Typography component="label" htmlFor={htmlFor} variant="body2" sx={{ fontWeight: 500, display: 'block', mb: 0.5 }}>
-      {children} {required && <span style={{ color: '#842029' }}>*</span>}
+    <Typography
+      component="label"
+      htmlFor={htmlFor}
+      variant="body2"
+      sx={{ fontWeight: 500, display: "block", mb: 0.5 }}
+    >
+      {children} {required && <span style={{ color: "#842029" }}>*</span>}
     </Typography>
   );
 }
@@ -47,9 +60,9 @@ export function HospitalDetailsStep() {
   } = useForm<HospitalDetailsInput>({
     resolver: zodResolver(hospitalDetailsSchema),
     defaultValues: {
-      hospitalName: stored.hospitalName ?? invite?.hospitalName ?? '',
-      nin: stored.nin ?? '',
-      ceaLicenceNumber: stored.ceaLicenceNumber ?? '',
+      hospitalName: stored.hospitalName ?? invite?.hospitalName ?? "",
+      nin: stored.nin ?? "",
+      ceaLicenceNumber: stored.ceaLicenceNumber ?? "",
       category: stored.category,
       cghsEmpanelment: stored.cghsEmpanelment,
       ayushmanEmpanelment: stored.ayushmanEmpanelment,
@@ -58,21 +71,32 @@ export function HospitalDetailsStep() {
 
   const onSubmit = handleSubmit((data) => {
     setHospitalDetails(data);
-    navigate('/register-hospital/address');
+    navigate("/register-hospital/address");
   });
 
   return (
     <Box>
-      <Box sx={{ textAlign: 'center', mb: 3 }}>
-        <Typography variant="h1" sx={{ fontSize: 28, fontWeight: 600, color: 'primary.main', mb: 0.5 }}>
+      <Box sx={{ textAlign: "center", mb: 3 }}>
+        <Typography
+          variant="h1"
+          sx={{ fontSize: 28, fontWeight: 600, color: "primary.main", mb: 0.5 }}
+        >
           Register your hospital
         </Typography>
-        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-          All fields marked <span style={{ color: '#842029' }}>*</span> are required.
+        <Typography variant="body2" sx={{ color: "text.secondary" }}>
+          All fields marked <span style={{ color: "#842029" }}>*</span> are
+          required.
         </Typography>
       </Box>
 
-      <Box sx={{ borderLeft: '3px solid', borderColor: 'primary.main', pl: 1.5, mb: 2 }}>
+      <Box
+        sx={{
+          borderLeft: "3px solid",
+          borderColor: "primary.main",
+          pl: 1.5,
+          mb: 2,
+        }}
+      >
         <Typography variant="h2" sx={{ fontSize: 20, fontWeight: 600 }}>
           Hospital details
         </Typography>
@@ -93,13 +117,15 @@ export function HospitalDetailsStep() {
               error={!!errors.hospitalName}
               helperText={
                 errors.hospitalName?.message ??
-                (invite ? 'Pre-filled from your invitation and cannot be changed.' : '')
+                (invite
+                  ? "Pre-filled from your invitation and cannot be changed."
+                  : "")
               }
               InputProps={{ readOnly: Boolean(invite) }}
               sx={{
                 mb: 2,
                 ...(invite && {
-                  '& .MuiOutlinedInput-root': { bgcolor: '#F5F2EC' },
+                  "& .MuiOutlinedInput-root": { bgcolor: "#F5F2EC" },
                 }),
               }}
             />
@@ -119,15 +145,20 @@ export function HospitalDetailsStep() {
                   {...field}
                   id="nin"
                   placeholder="10-digit NIN"
-                  inputProps={{ inputMode: 'numeric', maxLength: 10 }}
+                  inputProps={{ inputMode: "numeric", maxLength: 10 }}
                   error={!!errors.nin}
-                  helperText={errors.nin?.message ?? 'National Identification Number from the Health Facility Registry'}
+                  helperText={
+                    errors.nin?.message ??
+                    "National Identification Number from the Health Facility Registry"
+                  }
                 />
               )}
             />
           </div>
           <div>
-            <FieldLabel htmlFor="ceaLicenceNumber">Clinical Establishments Act licence number</FieldLabel>
+            <FieldLabel htmlFor="ceaLicenceNumber">
+              Clinical Establishments Act licence number
+            </FieldLabel>
             <Controller
               name="ceaLicenceNumber"
               control={control}
@@ -160,28 +191,31 @@ export function HospitalDetailsStep() {
                       tabIndex={0}
                       onClick={() => field.onChange(cat)}
                       onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
+                        if (e.key === "Enter" || e.key === " ") {
                           e.preventDefault();
                           field.onChange(cat);
                         }
                       }}
                       sx={{
-                        cursor: 'pointer',
+                        cursor: "pointer",
                         p: 2,
                         borderRadius: 1,
-                        border: '1.5px solid',
-                        borderColor: selected ? 'primary.main' : 'divider',
-                        bgcolor: selected ? '#E8EEF5' : 'background.paper',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
+                        border: "1.5px solid",
+                        borderColor: selected ? "primary.main" : "divider",
+                        bgcolor: selected ? "#E8EEF5" : "background.paper",
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
                         gap: 1,
-                        transition: 'all 120ms',
-                        '&:hover': { borderColor: 'primary.main' },
+                        transition: "all 120ms",
+                        "&:hover": { borderColor: "primary.main" },
                       }}
                     >
-                      <Icon sx={{ color: 'primary.main' }} />
-                      <Typography variant="body2" sx={{ fontWeight: selected ? 600 : 500 }}>
+                      <Icon sx={{ color: "primary.main" }} />
+                      <Typography
+                        variant="body2"
+                        sx={{ fontWeight: selected ? 600 : 500 }}
+                      >
                         {cat}
                       </Typography>
                     </Box>
@@ -191,7 +225,10 @@ export function HospitalDetailsStep() {
             )}
           />
           {errors.category && (
-            <Typography variant="caption" sx={{ color: 'error.main', mt: 0.5, display: 'block' }}>
+            <Typography
+              variant="caption"
+              sx={{ color: "error.main", mt: 0.5, display: "block" }}
+            >
               {errors.category.message}
             </Typography>
           )}
@@ -212,11 +249,32 @@ export function HospitalDetailsStep() {
           />
         </div>
 
-        <Box sx={{ mt: 4, pt: 3, borderTop: '1px solid', borderColor: 'divider', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Link component="button" type="button" onClick={() => navigate('/sign-in')} underline="hover" sx={{ color: 'text.secondary' }}>
+        <Box
+          sx={{
+            mt: 4,
+            pt: 3,
+            borderTop: "1px solid",
+            borderColor: "divider",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <Link
+            component="button"
+            type="button"
+            onClick={() => navigate("/sign-in")}
+            underline="hover"
+            sx={{ color: "text.secondary" }}
+          >
             Cancel
           </Link>
-          <Button type="submit" variant="contained" endIcon={<ArrowForwardIcon />} sx={{ height: 44, px: 3, fontWeight: 600 }}>
+          <Button
+            type="submit"
+            variant="contained"
+            endIcon={<ArrowForwardIcon />}
+            sx={{ height: 44, px: 3, fontWeight: 600 }}
+          >
             Next: Address & Location
           </Button>
         </Box>
@@ -231,8 +289,8 @@ function YesNoField({
   label,
   errorMsg,
 }: {
-  name: 'cghsEmpanelment' | 'ayushmanEmpanelment';
-  control: ReturnType<typeof useForm<HospitalDetailsInput>>['control'];
+  name: "cghsEmpanelment" | "ayushmanEmpanelment";
+  control: ReturnType<typeof useForm<HospitalDetailsInput>>["control"];
   label: string;
   errorMsg?: string;
 }) {
@@ -249,15 +307,15 @@ function YesNoField({
             onChange={(_, v) => v && field.onChange(v)}
             fullWidth
             sx={{
-              '& .MuiToggleButton-root': {
+              "& .MuiToggleButton-root": {
                 height: 40,
                 fontWeight: 600,
-                textTransform: 'none',
-                borderColor: 'divider',
+                textTransform: "none",
+                borderColor: "divider",
               },
-              '& .Mui-selected': {
-                bgcolor: 'primary.main !important',
-                color: '#FFFFFF !important',
+              "& .Mui-selected": {
+                bgcolor: "primary.main !important",
+                color: "#FFFFFF !important",
               },
             }}
           >
@@ -267,7 +325,10 @@ function YesNoField({
         )}
       />
       {errorMsg && (
-        <Typography variant="caption" sx={{ color: 'error.main', mt: 0.5, display: 'block' }}>
+        <Typography
+          variant="caption"
+          sx={{ color: "error.main", mt: 0.5, display: "block" }}
+        >
           {errorMsg}
         </Typography>
       )}

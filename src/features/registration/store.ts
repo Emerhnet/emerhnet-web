@@ -1,24 +1,24 @@
-import { create } from 'zustand';
-import type { HospitalDetailsInput } from './schemas/hospitalDetailsSchema';
-import type { AddressLocationInput } from './schemas/addressLocationSchema';
-import type { AdminContactInput } from './schemas/adminContactSchema';
+import { create } from "zustand";
+import type { HospitalDetailsInput } from "./schemas/hospitalDetailsSchema";
+import type { AddressLocationInput } from "./schemas/addressLocationSchema";
+import type { AdminContactInput } from "./schemas/adminContactSchema";
 
 export type AddressLocationData = AddressLocationInput;
 export type AdminContactData = AdminContactInput;
 
 export type DocumentSlotKey =
-  | 'hospitalRegistrationCertificate'
-  | 'ceaLicence'
-  | 'authorisationLetter'
-  | 'governmentOrder'
-  | 'nabhAccreditation'
-  | 'panOfEntity';
+  | "hospitalRegistrationCertificate"
+  | "ceaLicence"
+  | "authorisationLetter"
+  | "governmentOrder"
+  | "nabhAccreditation"
+  | "panOfEntity";
 
 export type DocumentSlotState = {
   fileName?: string;
   sizeBytes?: number;
   s3Key?: string;
-  scanStatus?: 'scanning' | 'clean' | 'infected' | 'error';
+  scanStatus?: "scanning" | "clean" | "infected" | "error";
 };
 
 export type InviteContext = {
@@ -37,7 +37,10 @@ export type RegistrationState = {
   setHospitalDetails: (data: HospitalDetailsInput) => void;
   setAddressLocation: (data: AddressLocationInput) => void;
   setAdminContact: (data: AdminContactInput) => void;
-  setDocument: (slot: DocumentSlotKey, state: DocumentSlotState | undefined) => void;
+  setDocument: (
+    slot: DocumentSlotKey,
+    state: DocumentSlotState | undefined,
+  ) => void;
   setInvite: (invite: InviteContext | null) => void;
   reset: () => void;
 };

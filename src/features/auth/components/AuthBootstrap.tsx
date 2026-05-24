@@ -1,8 +1,8 @@
-import { useEffect, type ReactNode } from 'react';
-import Box from '@mui/material/Box';
-import CircularProgress from '@mui/material/CircularProgress';
-import { useAuthStore } from '../store';
-import { fetchMe } from '../api/useMe';
+import { useEffect, type ReactNode } from "react";
+import Box from "@mui/material/Box";
+import CircularProgress from "@mui/material/CircularProgress";
+import { useAuthStore } from "../store";
+import { fetchMe } from "../api/useMe";
 
 export function AuthBootstrap({ children }: { children: ReactNode }) {
   const isBootstrapped = useAuthStore((s) => s.isBootstrapped);
@@ -26,7 +26,15 @@ export function AuthBootstrap({ children }: { children: ReactNode }) {
 
   if (!isBootstrapped) {
     return (
-      <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: '#FAF7F2' }}>
+      <Box
+        sx={{
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          bgcolor: "#FAF7F2",
+        }}
+      >
         <CircularProgress />
       </Box>
     );

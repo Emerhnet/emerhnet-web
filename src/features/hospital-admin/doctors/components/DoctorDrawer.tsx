@@ -1,34 +1,47 @@
-import { useEffect, useState } from 'react';
-import Drawer from '@mui/material/Drawer';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
-import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
-import MenuItem from '@mui/material/MenuItem';
-import RadioGroup from '@mui/material/RadioGroup';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Radio from '@mui/material/Radio';
-import Chip from '@mui/material/Chip';
-import Autocomplete from '@mui/material/Autocomplete';
-import InputAdornment from '@mui/material/InputAdornment';
-import CloseIcon from '@mui/icons-material/Close';
-import PersonIcon from '@mui/icons-material/Person';
-import AlternateEmailIcon from '@mui/icons-material/AlternateEmail';
-import SchoolIcon from '@mui/icons-material/School';
-import AssignmentIndIcon from '@mui/icons-material/AssignmentInd';
-import LockIcon from '@mui/icons-material/Lock';
-import { QUALIFICATION_SUGGESTIONS, COUNCILS } from '../data';
-import { useDepartments, type ApiDepartment } from '../../api/departments';
-import type { ApiDoctor, CreateDoctorInput } from '../../api/doctors';
+import { useEffect, useState } from "react";
+import Drawer from "@mui/material/Drawer";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import IconButton from "@mui/material/IconButton";
+import Button from "@mui/material/Button";
+import TextField from "@mui/material/TextField";
+import MenuItem from "@mui/material/MenuItem";
+import RadioGroup from "@mui/material/RadioGroup";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import Radio from "@mui/material/Radio";
+import Chip from "@mui/material/Chip";
+import Autocomplete from "@mui/material/Autocomplete";
+import InputAdornment from "@mui/material/InputAdornment";
+import CloseIcon from "@mui/icons-material/Close";
+import PersonIcon from "@mui/icons-material/Person";
+import AlternateEmailIcon from "@mui/icons-material/AlternateEmail";
+import SchoolIcon from "@mui/icons-material/School";
+import AssignmentIndIcon from "@mui/icons-material/AssignmentInd";
+import LockIcon from "@mui/icons-material/Lock";
+import { QUALIFICATION_SUGGESTIONS, COUNCILS } from "../data";
+import { useDepartments, type ApiDepartment } from "../../api/departments";
+import type { ApiDoctor, CreateDoctorInput } from "../../api/doctors";
 
-type Gender = ApiDoctor['gender'];
+type Gender = ApiDoctor["gender"];
 
-function SectionHeader({ Icon, title }: { Icon: typeof PersonIcon; title: string }) {
+function SectionHeader({
+  Icon,
+  title,
+}: {
+  Icon: typeof PersonIcon;
+  title: string;
+}) {
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 3, mb: 2 }}>
-      <Icon sx={{ color: 'primary.main', fontSize: 20 }} />
-      <Typography sx={{ fontSize: 14, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+    <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 3, mb: 2 }}>
+      <Icon sx={{ color: "primary.main", fontSize: 20 }} />
+      <Typography
+        sx={{
+          fontSize: 14,
+          fontWeight: 600,
+          textTransform: "uppercase",
+          letterSpacing: "0.04em",
+        }}
+      >
         {title}
       </Typography>
     </Box>
@@ -44,7 +57,7 @@ export function DoctorDrawer({
   onSubmit,
 }: {
   open: boolean;
-  mode: 'add' | 'edit';
+  mode: "add" | "edit";
   doctor?: ApiDoctor | null;
   isPending?: boolean;
   onCancel: () => void;
@@ -53,24 +66,24 @@ export function DoctorDrawer({
   const { data: departments } = useDepartments({ active: true });
   const activeDepts: ApiDepartment[] = departments ?? [];
 
-  const [fullName, setFullName] = useState('');
-  const [gender, setGender] = useState<Gender>('Female');
-  const [dob, setDob] = useState('');
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
+  const [fullName, setFullName] = useState("");
+  const [gender, setGender] = useState<Gender>("Female");
+  const [dob, setDob] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [qualifications, setQualifications] = useState<string[]>([]);
-  const [specialisation, setSpecialisation] = useState('');
-  const [councilReg, setCouncilReg] = useState('');
-  const [council, setCouncil] = useState<string>('MCI');
-  const [departmentId, setDepartmentId] = useState('');
-  const [joinedAt, setJoinedAt] = useState('');
+  const [specialisation, setSpecialisation] = useState("");
+  const [councilReg, setCouncilReg] = useState("");
+  const [council, setCouncil] = useState<string>("MCI");
+  const [departmentId, setDepartmentId] = useState("");
+  const [joinedAt, setJoinedAt] = useState("");
 
   useEffect(() => {
     if (!open) return;
-    if (mode === 'edit' && doctor) {
+    if (mode === "edit" && doctor) {
       setFullName(doctor.fullName);
       setGender(doctor.gender);
-      setDob(doctor.dob ? doctor.dob.slice(0, 10) : '');
+      setDob(doctor.dob ? doctor.dob.slice(0, 10) : "");
       setEmail(doctor.email);
       setPhone(doctor.phone);
       setQualifications(doctor.qualifications);
@@ -80,17 +93,17 @@ export function DoctorDrawer({
       setDepartmentId(doctor.departmentId);
       setJoinedAt(doctor.joinedAt.slice(0, 10));
     } else {
-      setFullName('');
-      setGender('Female');
-      setDob('');
-      setEmail('');
-      setPhone('');
+      setFullName("");
+      setGender("Female");
+      setDob("");
+      setEmail("");
+      setPhone("");
       setQualifications([]);
-      setSpecialisation('');
-      setCouncilReg('');
-      setCouncil('MCI');
-      setDepartmentId('');
-      setJoinedAt('');
+      setSpecialisation("");
+      setCouncilReg("");
+      setCouncil("MCI");
+      setDepartmentId("");
+      setJoinedAt("");
     }
   }, [open, mode, doctor]);
 
@@ -125,18 +138,35 @@ export function DoctorDrawer({
       anchor="right"
       open={open}
       onClose={onCancel}
-      PaperProps={{ sx: { width: 640, display: 'flex', flexDirection: 'column' } }}
+      PaperProps={{
+        sx: { width: 640, display: "flex", flexDirection: "column" },
+      }}
     >
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 3, py: 2, borderBottom: '1px solid', borderColor: 'divider' }}>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          px: 3,
+          py: 2,
+          borderBottom: "1px solid",
+          borderColor: "divider",
+        }}
+      >
         <Typography sx={{ fontSize: 18, fontWeight: 600 }}>
-          {mode === 'edit' ? 'Edit doctor' : 'Add a doctor'}
+          {mode === "edit" ? "Edit doctor" : "Add a doctor"}
         </Typography>
-        <IconButton size="small" onClick={onCancel} aria-label="Close" disabled={isPending}>
+        <IconButton
+          size="small"
+          onClick={onCancel}
+          aria-label="Close"
+          disabled={isPending}
+        >
           <CloseIcon fontSize="small" />
         </IconButton>
       </Box>
 
-      <Box sx={{ flex: 1, overflowY: 'auto', px: 3, pb: 3 }}>
+      <Box sx={{ flex: 1, overflowY: "auto", px: 3, pb: 3 }}>
         <SectionHeader Icon={PersonIcon} title="Personal details" />
         <TextField
           label="Full name"
@@ -147,12 +177,24 @@ export function DoctorDrawer({
           sx={{ mb: 2 }}
         />
         <Typography sx={{ fontSize: 13, fontWeight: 500, mb: 0.5 }}>
-          Gender <span style={{ color: '#842029' }}>*</span>
+          Gender <span style={{ color: "#842029" }}>*</span>
         </Typography>
-        <RadioGroup row value={gender} onChange={(e) => setGender(e.target.value as Gender)} sx={{ mb: 2 }}>
-          {(['Male', 'Female', 'Other', 'Prefer not to say'] as const).map((g) => (
-            <FormControlLabel key={g} value={g} control={<Radio size="small" />} label={<Typography variant="body2">{g}</Typography>} />
-          ))}
+        <RadioGroup
+          row
+          value={gender}
+          onChange={(e) => setGender(e.target.value as Gender)}
+          sx={{ mb: 2 }}
+        >
+          {(["Male", "Female", "Other", "Prefer not to say"] as const).map(
+            (g) => (
+              <FormControlLabel
+                key={g}
+                value={g}
+                control={<Radio size="small" />}
+                label={<Typography variant="body2">{g}</Typography>}
+              />
+            ),
+          )}
         </RadioGroup>
         <TextField
           label="Date of birth"
@@ -165,8 +207,20 @@ export function DoctorDrawer({
 
         <SectionHeader Icon={AlternateEmailIcon} title="Contact" />
         <div className="grid grid-cols-2 gap-3">
-          <TextField label="Email" required type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-          <TextField label="Phone" required type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} />
+          <TextField
+            label="Email"
+            required
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <TextField
+            label="Phone"
+            required
+            type="tel"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+          />
         </div>
 
         <SectionHeader Icon={SchoolIcon} title="Professional" />
@@ -179,10 +233,19 @@ export function DoctorDrawer({
           renderTags={(value, getTagProps) =>
             value.map((option, idx) => {
               const { key: _k, ...tagProps } = getTagProps({ index: idx });
-              return <Chip key={`${option}-${idx}`} size="small" label={option} {...tagProps} />;
+              return (
+                <Chip
+                  key={`${option}-${idx}`}
+                  size="small"
+                  label={option}
+                  {...tagProps}
+                />
+              );
             })
           }
-          renderInput={(p) => <TextField {...p} label="Qualifications" required />}
+          renderInput={(p) => (
+            <TextField {...p} label="Qualifications" required />
+          )}
           sx={{ mb: 2 }}
         />
         <TextField
@@ -198,21 +261,24 @@ export function DoctorDrawer({
             required
             value={councilReg}
             onChange={(e) => setCouncilReg(e.target.value)}
-            disabled={mode === 'edit'}
+            disabled={mode === "edit"}
             helperText={
-              mode === 'edit'
-                ? 'Reg number cannot be edited. Create a new record if a correction is needed.'
-                : 'Must be unique across this hospital.'
+              mode === "edit"
+                ? "Reg number cannot be edited. Create a new record if a correction is needed."
+                : "Must be unique across this hospital."
             }
             InputProps={
-              mode === 'edit'
+              mode === "edit"
                 ? {
                     endAdornment: (
                       <InputAdornment position="end">
-                        <LockIcon fontSize="small" sx={{ color: 'text.secondary' }} />
+                        <LockIcon
+                          fontSize="small"
+                          sx={{ color: "text.secondary" }}
+                        />
                       </InputAdornment>
                     ),
-                    sx: { bgcolor: '#F2EEE6' },
+                    sx: { bgcolor: "#F2EEE6" },
                   }
                 : undefined
             }
@@ -241,7 +307,11 @@ export function DoctorDrawer({
             value={departmentId}
             onChange={(e) => setDepartmentId(e.target.value)}
           >
-            {activeDepts.length === 0 && <MenuItem value="" disabled>No active departments — add one first</MenuItem>}
+            {activeDepts.length === 0 && (
+              <MenuItem value="" disabled>
+                No active departments — add one first
+              </MenuItem>
+            )}
             {activeDepts.map((d) => (
               <MenuItem key={d.id} value={d.id}>
                 {d.name}
@@ -259,12 +329,30 @@ export function DoctorDrawer({
         </div>
       </Box>
 
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1.5, px: 3, py: 2, borderTop: '1px solid', borderColor: 'divider' }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "flex-end",
+          gap: 1.5,
+          px: 3,
+          py: 2,
+          borderTop: "1px solid",
+          borderColor: "divider",
+        }}
+      >
         <Button variant="outlined" onClick={onCancel} disabled={isPending}>
           Cancel
         </Button>
-        <Button variant="contained" onClick={handleSave} disabled={!valid || isPending}>
-          {isPending ? 'Saving…' : mode === 'edit' ? 'Save changes' : 'Add doctor'}
+        <Button
+          variant="contained"
+          onClick={handleSave}
+          disabled={!valid || isPending}
+        >
+          {isPending
+            ? "Saving…"
+            : mode === "edit"
+              ? "Save changes"
+              : "Add doctor"}
         </Button>
       </Box>
     </Drawer>

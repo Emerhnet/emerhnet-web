@@ -1,17 +1,17 @@
-import type { ReactNode } from 'react';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
+import type { ReactNode } from "react";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import DialogActions from "@mui/material/DialogActions";
+import Button from "@mui/material/Button";
 
 export function ConfirmDialog({
   open,
   title,
   body,
-  cancelLabel = 'Cancel',
-  confirmLabel = 'Confirm',
-  confirmTone = 'primary',
+  cancelLabel = "Cancel",
+  confirmLabel = "Confirm",
+  confirmTone = "primary",
   confirmDisabled = false,
   loading = false,
   onCancel,
@@ -22,14 +22,20 @@ export function ConfirmDialog({
   body: ReactNode;
   cancelLabel?: string;
   confirmLabel?: string;
-  confirmTone?: 'primary' | 'danger';
+  confirmTone?: "primary" | "danger";
   confirmDisabled?: boolean;
   loading?: boolean;
   onCancel: () => void;
   onConfirm: () => void;
 }) {
   return (
-    <Dialog open={open} onClose={onCancel} maxWidth="xs" fullWidth PaperProps={{ sx: { width: 480 } }}>
+    <Dialog
+      open={open}
+      onClose={onCancel}
+      maxWidth="xs"
+      fullWidth
+      PaperProps={{ sx: { width: 480 } }}
+    >
       <DialogTitle sx={{ fontSize: 18, fontWeight: 600 }}>{title}</DialogTitle>
       <DialogContent>{body}</DialogContent>
       <DialogActions sx={{ px: 3, pb: 2.5 }}>
@@ -38,11 +44,11 @@ export function ConfirmDialog({
         </Button>
         <Button
           variant="contained"
-          color={confirmTone === 'danger' ? 'error' : 'primary'}
+          color={confirmTone === "danger" ? "error" : "primary"}
           onClick={onConfirm}
           disabled={confirmDisabled || loading}
         >
-          {loading ? 'Working...' : confirmLabel}
+          {loading ? "Working..." : confirmLabel}
         </Button>
       </DialogActions>
     </Dialog>

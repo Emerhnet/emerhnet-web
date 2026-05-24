@@ -1,16 +1,16 @@
-import { useState } from 'react';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
-import MenuItem from '@mui/material/MenuItem';
-import Typography from '@mui/material/Typography';
-import Box from '@mui/material/Box';
-import { MASTER_BED_TYPES } from '../data';
+import { useState } from "react";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import DialogActions from "@mui/material/DialogActions";
+import Button from "@mui/material/Button";
+import TextField from "@mui/material/TextField";
+import MenuItem from "@mui/material/MenuItem";
+import Typography from "@mui/material/Typography";
+import Box from "@mui/material/Box";
+import { MASTER_BED_TYPES } from "../data";
 
-const CUSTOM = '__custom__';
+const CUSTOM = "__custom__";
 
 export function ConfigureBedTypeDialog({
   open,
@@ -23,8 +23,8 @@ export function ConfigureBedTypeDialog({
   onCancel: () => void;
   onConfirm: (p: { type: string; total: number; occupied: number }) => void;
 }) {
-  const [typeChoice, setTypeChoice] = useState<string>('');
-  const [customName, setCustomName] = useState('');
+  const [typeChoice, setTypeChoice] = useState<string>("");
+  const [customName, setCustomName] = useState("");
   const [total, setTotal] = useState(0);
   const [occupied, setOccupied] = useState(0);
 
@@ -37,10 +37,18 @@ export function ConfigureBedTypeDialog({
   const handleConfirm = () => onConfirm({ type: finalType, total, occupied });
 
   return (
-    <Dialog open={open} onClose={onCancel} maxWidth="xs" fullWidth PaperProps={{ sx: { width: 480 } }}>
+    <Dialog
+      open={open}
+      onClose={onCancel}
+      maxWidth="xs"
+      fullWidth
+      PaperProps={{ sx: { width: 480 } }}
+    >
       <DialogTitle sx={{ pb: 1 }}>
-        <Typography sx={{ fontSize: 18, fontWeight: 600 }}>Configure bed type</Typography>
-        <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5 }}>
+        <Typography sx={{ fontSize: 18, fontWeight: 600 }}>
+          Configure bed type
+        </Typography>
+        <Typography variant="body2" sx={{ color: "text.secondary", mt: 0.5 }}>
           Add a new bed type to your hospital.
         </Typography>
       </DialogTitle>
@@ -55,7 +63,9 @@ export function ConfigureBedTypeDialog({
           sx={{ mb: 2 }}
         >
           {MASTER_BED_TYPES.map((t) => (
-            <MenuItem key={t} value={t}>{t}</MenuItem>
+            <MenuItem key={t} value={t}>
+              {t}
+            </MenuItem>
           ))}
           <MenuItem value={CUSTOM}>
             <em>Add custom…</em>
@@ -98,7 +108,7 @@ export function ConfigureBedTypeDialog({
             sx={{
               fontSize: 16,
               fontWeight: 600,
-              color: available > 0 ? 'success.main' : 'error.main',
+              color: available > 0 ? "success.main" : "error.main",
             }}
           >
             Available: {available}
@@ -109,8 +119,12 @@ export function ConfigureBedTypeDialog({
         <Button variant="outlined" onClick={onCancel} disabled={submitting}>
           Cancel
         </Button>
-        <Button variant="contained" onClick={handleConfirm} disabled={!valid || submitting}>
-          {submitting ? 'Adding...' : 'Add bed type'}
+        <Button
+          variant="contained"
+          onClick={handleConfirm}
+          disabled={!valid || submitting}
+        >
+          {submitting ? "Adding..." : "Add bed type"}
         </Button>
       </DialogActions>
     </Dialog>

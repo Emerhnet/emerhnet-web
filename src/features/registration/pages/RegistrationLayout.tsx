@@ -1,20 +1,23 @@
-import { useEffect } from 'react';
-import { Outlet, useLocation, useSearchParams } from 'react-router-dom';
-import Box from '@mui/material/Box';
-import Alert from '@mui/material/Alert';
-import Skeleton from '@mui/material/Skeleton';
-import Typography from '@mui/material/Typography';
-import MailOutlineIcon from '@mui/icons-material/MailOutline';
-import { PublicShell } from '@/shared/layouts/PublicShell';
-import { RegistrationStepper, REGISTRATION_STEPS } from '@/shared/components/RegistrationStepper';
-import { useVerifyInvitation } from '../api/useVerifyInvitation';
-import { useRegistrationStore } from '../store';
-import { getApiErrorMessage } from '@/shared/lib/apiError';
+import { useEffect } from "react";
+import { Outlet, useLocation, useSearchParams } from "react-router-dom";
+import Box from "@mui/material/Box";
+import Alert from "@mui/material/Alert";
+import Skeleton from "@mui/material/Skeleton";
+import Typography from "@mui/material/Typography";
+import MailOutlineIcon from "@mui/icons-material/MailOutline";
+import { PublicShell } from "@/shared/layouts/PublicShell";
+import {
+  RegistrationStepper,
+  REGISTRATION_STEPS,
+} from "@/shared/components/RegistrationStepper";
+import { useVerifyInvitation } from "../api/useVerifyInvitation";
+import { useRegistrationStore } from "../store";
+import { getApiErrorMessage } from "@/shared/lib/apiError";
 
 export function RegistrationLayout() {
   const { pathname } = useLocation();
   const [params] = useSearchParams();
-  const inviteToken = params.get('invite');
+  const inviteToken = params.get("invite");
 
   const invite = useRegistrationStore((s) => s.invite);
   const setInvite = useRegistrationStore((s) => s.setInvite);
@@ -38,7 +41,7 @@ export function RegistrationLayout() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [verified, inviteToken]);
 
-  if (pathname.endsWith('/submitted')) {
+  if (pathname.endsWith("/submitted")) {
     return (
       <PublicShell width={480}>
         <Outlet />
@@ -46,24 +49,25 @@ export function RegistrationLayout() {
     );
   }
 
-  const allComplete = pathname.endsWith('/review');
+  const allComplete = pathname.endsWith("/review");
   const activeIndex = allComplete
     ? REGISTRATION_STEPS.length
     : Math.max(
         0,
         REGISTRATION_STEPS.findIndex((s) =>
-          s.path === '/register-hospital'
-            ? pathname === '/register-hospital'
+          s.path === "/register-hospital"
+            ? pathname === "/register-hospital"
             : pathname.startsWith(s.path),
         ),
       );
 
-  const inviteNotReady = Boolean(inviteToken) && (verifying || invite?.token !== inviteToken);
+  const inviteNotReady =
+    Boolean(inviteToken) && (verifying || invite?.token !== inviteToken);
 
   if (inviteNotReady && !inviteError) {
     return (
       <PublicShell width={720}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
           <Skeleton height={40} />
           <Skeleton height={32} width="60%" />
           <Skeleton height={200} />
@@ -76,9 +80,10 @@ export function RegistrationLayout() {
     return (
       <PublicShell width={520}>
         <Alert severity="error" sx={{ mb: 2 }}>
-          {getApiErrorMessage(error) || 'This invitation link is invalid or has expired.'}
+          {getApiErrorMessage(error) ||
+            "This invitation link is invalid or has expired."}
         </Alert>
-        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+        <Typography variant="body2" sx={{ color: "text.secondary" }}>
           Contact the EMERHNET team to request a new invitation.
         </Typography>
       </PublicShell>
@@ -87,7 +92,7 @@ export function RegistrationLayout() {
 
   return (
     <PublicShell width={720} disableCardPadding>
-      <Box sx={{ bgcolor: 'background.default', px: 3, pt: 3, pb: 1 }}>
+      <Box sx={{ bgcolor: "background.default", px: 3, pt: 3, pb: 1 }}>
         <RegistrationStepper activeIndex={activeIndex} />
       </Box>
       {invite && (
@@ -95,12 +100,12 @@ export function RegistrationLayout() {
           <Alert
             severity="info"
             icon={<MailOutlineIcon fontSize="small" />}
-            sx={{ alignItems: 'center' }}
+            sx={{ alignItems: "center" }}
           >
             <Typography variant="body2" sx={{ fontWeight: 500 }}>
               Invited registration for <strong>{invite.hospitalName}</strong>
             </Typography>
-            <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+            <Typography variant="caption" sx={{ color: "text.secondary" }}>
               Hospital name is locked. Other details are yours to fill in.
             </Typography>
           </Alert>

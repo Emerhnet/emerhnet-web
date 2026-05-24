@@ -1,30 +1,30 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 export const setPasswordSchema = z
   .object({
     newPassword: z
       .string()
-      .min(10, 'At least 10 characters')
-      .regex(/[A-Z]/, 'Must contain an uppercase letter')
-      .regex(/[a-z]/, 'Must contain a lowercase letter')
-      .regex(/\d/, 'Must contain a digit'),
-    confirmPassword: z.string().min(1, 'Confirm your password'),
+      .min(10, "At least 10 characters")
+      .regex(/[A-Z]/, "Must contain an uppercase letter")
+      .regex(/[a-z]/, "Must contain a lowercase letter")
+      .regex(/\d/, "Must contain a digit"),
+    confirmPassword: z.string().min(1, "Confirm your password"),
   })
   .refine((v) => v.newPassword === v.confirmPassword, {
-    message: 'Passwords do not match',
-    path: ['confirmPassword'],
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
   });
 
 export type SetPasswordInput = z.infer<typeof setPasswordSchema>;
 
 const COMMON = new Set([
-  'password',
-  'password1',
-  'password123',
-  '12345678',
-  'qwerty123',
-  'abcd1234',
-  'letmein1',
+  "password",
+  "password1",
+  "password123",
+  "12345678",
+  "qwerty123",
+  "abcd1234",
+  "letmein1",
 ]);
 
 export type PasswordChecks = {

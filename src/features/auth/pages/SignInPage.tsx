@@ -41,12 +41,14 @@ export function SignInPage() {
     try {
       const user = await mutation.mutateAsync(data);
       setUser(user);
-      enqueueSnackbar(`Signed in as ${user.role}.`, { variant: 'success' });
-      navigate(user.role === 'superAdmin' ? '/admin/dashboard' : '/hospital/dashboard');
+      enqueueSnackbar(`Signed in as ${user.role}.`, { variant: "success" });
+      navigate(
+        user.role === "superAdmin" ? "/admin/dashboard" : "/hospital/dashboard",
+      );
     } catch (e) {
       const msg = getApiErrorMessage(e, "Invalid email or password.");
       setSubmitError(msg);
-      enqueueSnackbar(msg, { variant: 'error' });
+      enqueueSnackbar(msg, { variant: "error" });
     }
   });
 

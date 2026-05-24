@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios from "axios";
 
 export type ApiErrorBody = {
   success: false;
@@ -7,10 +7,13 @@ export type ApiErrorBody = {
   details?: unknown;
 };
 
-export function getApiErrorMessage(err: unknown, fallback = 'Something went wrong'): string {
+export function getApiErrorMessage(
+  err: unknown,
+  fallback = "Something went wrong",
+): string {
   if (axios.isAxiosError(err)) {
-    if (err.code === 'ERR_NETWORK' || !err.response) {
-      return 'Could not reach the server. Check your connection and try again.';
+    if (err.code === "ERR_NETWORK" || !err.response) {
+      return "Could not reach the server. Check your connection and try again.";
     }
     const body = err.response.data as Partial<ApiErrorBody> | undefined;
     if (body?.message) return body.message;

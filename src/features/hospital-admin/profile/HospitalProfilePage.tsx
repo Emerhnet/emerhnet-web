@@ -1,65 +1,83 @@
-import { useEffect, useRef, useState } from 'react';
-import Box from '@mui/material/Box';
-import Card from '@mui/material/Card';
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
-import Tooltip from '@mui/material/Tooltip';
-import Avatar from '@mui/material/Avatar';
-import Alert from '@mui/material/Alert';
-import Skeleton from '@mui/material/Skeleton';
-import IconButton from '@mui/material/IconButton';
-import EditIcon from '@mui/icons-material/Edit';
-import LockIcon from '@mui/icons-material/Lock';
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
-import { useSnackbar } from 'notistack';
-import { PageHeader } from '@/shared/components/PageHeader';
-import { SectionCard } from '@/shared/components/SectionCard';
-import { StatusChip, type StatusTone } from '@/shared/components/StatusChip';
-import { formatIst, formatRelative } from '@/shared/lib/datetime';
-import { getApiErrorMessage } from '@/shared/lib/apiError';
-import { useUploadDocument } from '@/features/registration/api/useUploadDocument';
+import { useEffect, useRef, useState } from "react";
+import Box from "@mui/material/Box";
+import Card from "@mui/material/Card";
+import Typography from "@mui/material/Typography";
+import Button from "@mui/material/Button";
+import TextField from "@mui/material/TextField";
+import Tooltip from "@mui/material/Tooltip";
+import Avatar from "@mui/material/Avatar";
+import Alert from "@mui/material/Alert";
+import Skeleton from "@mui/material/Skeleton";
+import IconButton from "@mui/material/IconButton";
+import EditIcon from "@mui/icons-material/Edit";
+import LockIcon from "@mui/icons-material/Lock";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import { useSnackbar } from "notistack";
+import { PageHeader } from "@/shared/components/PageHeader";
+import { SectionCard } from "@/shared/components/SectionCard";
+import { StatusChip, type StatusTone } from "@/shared/components/StatusChip";
+import { formatIst, formatRelative } from "@/shared/lib/datetime";
+import { getApiErrorMessage } from "@/shared/lib/apiError";
+import { useUploadDocument } from "@/features/registration/api/useUploadDocument";
 import {
   useMyHospital,
   useUpdateMyHospital,
   useAddPhoto,
   useDeletePhoto,
   type MyHospital,
-} from '../api/hospital';
+} from "../api/hospital";
 
 const MAX_DESC = 2000;
 const MAX_PHOTOS = 10;
 
-const STATUS_LABELS: Record<MyHospital['status'], string> = {
-  pending: 'Pending',
-  approved: 'Approved',
-  suspended: 'Suspended',
-  rejected: 'Rejected',
+const STATUS_LABELS: Record<MyHospital["status"], string> = {
+  pending: "Pending",
+  approved: "Approved",
+  suspended: "Suspended",
+  rejected: "Rejected",
 };
-const STATUS_TONE: Record<MyHospital['status'], StatusTone> = {
-  pending: 'warning',
-  approved: 'success',
-  suspended: 'danger',
-  rejected: 'danger',
+const STATUS_TONE: Record<MyHospital["status"], StatusTone> = {
+  pending: "warning",
+  approved: "success",
+  suspended: "danger",
+  rejected: "danger",
 };
 
-function ReadRow({ label, value, locked }: { label: string; value: string; locked?: boolean }) {
+function ReadRow({
+  label,
+  value,
+  locked,
+}: {
+  label: string;
+  value: string;
+  locked?: boolean;
+}) {
   return (
     <div>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-        <Typography variant="caption" sx={{ color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 500 }}>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+        <Typography
+          variant="caption"
+          sx={{
+            color: "text.secondary",
+            textTransform: "uppercase",
+            letterSpacing: "0.04em",
+            fontWeight: 500,
+          }}
+        >
           {label}
         </Typography>
         {locked && (
           <Tooltip title="Changes require Galas re-approval">
-            <LockIcon sx={{ fontSize: 12, color: 'text.secondary' }} />
+            <LockIcon sx={{ fontSize: 12, color: "text.secondary" }} />
           </Tooltip>
         )}
       </Box>
-      <Typography variant="body2" sx={{ mt: 0.5 }}>{value || '—'}</Typography>
+      <Typography variant="body2" sx={{ mt: 0.5 }}>
+        {value || "—"}
+      </Typography>
     </div>
   );
 }
@@ -73,16 +91,16 @@ function MapEmbed({ lat, lng }: { lat: number; lng: number }) {
         height: 280,
         mt: 2,
         borderRadius: 1,
-        overflow: 'hidden',
-        border: '1px solid',
-        borderColor: 'divider',
+        overflow: "hidden",
+        border: "1px solid",
+        borderColor: "divider",
       }}
     >
       <iframe
         key={`${lat},${lng}`}
         title="Hospital location"
         src={src}
-        style={{ border: 0, width: '100%', height: '100%' }}
+        style={{ border: 0, width: "100%", height: "100%" }}
         loading="lazy"
         referrerPolicy="no-referrer-when-downgrade"
       />
@@ -128,7 +146,7 @@ function PhotoGallery({ hospital }: { hospital: MyHospital }) {
 
   const handleFiles = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
-    e.target.value = '';
+    e.target.value = "";
     if (!files.length) return;
     const remaining = MAX_PHOTOS - hospital.photos.length;
     const toUpload = files.slice(0, remaining);
@@ -141,11 +159,16 @@ function PhotoGallery({ hospital }: { hospital: MyHospital }) {
           sizeBytes: result.sizeBytes,
         });
       } catch (err) {
-        enqueueSnackbar(getApiErrorMessage(err, `Failed to upload ${file.name}.`), { variant: 'error' });
+        enqueueSnackbar(
+          getApiErrorMessage(err, `Failed to upload ${file.name}.`),
+          { variant: "error" },
+        );
       }
     }
     if (files.length > remaining) {
-      enqueueSnackbar(`Limit is ${MAX_PHOTOS} photos. Extra files skipped.`, { variant: 'warning' });
+      enqueueSnackbar(`Limit is ${MAX_PHOTOS} photos. Extra files skipped.`, {
+        variant: "warning",
+      });
     }
   };
 
@@ -153,7 +176,9 @@ function PhotoGallery({ hospital }: { hospital: MyHospital }) {
     try {
       await deletePhoto.mutateAsync(s3Key);
     } catch (err) {
-      enqueueSnackbar(getApiErrorMessage(err, 'Failed to remove photo.'), { variant: 'error' });
+      enqueueSnackbar(getApiErrorMessage(err, "Failed to remove photo."), {
+        variant: "error",
+      });
     }
   };
 
@@ -169,7 +194,7 @@ function PhotoGallery({ hospital }: { hospital: MyHospital }) {
           disabled={atLimit || busy}
           sx={{ fontWeight: 600 }}
         >
-          {busy ? 'Uploading…' : 'Add photos'}
+          {busy ? "Uploading…" : "Add photos"}
         </Button>
       }
     >
@@ -184,32 +209,38 @@ function PhotoGallery({ hospital }: { hospital: MyHospital }) {
       {hospital.photos.length === 0 ? (
         <Box
           sx={{
-            aspectRatio: '16 / 9',
-            bgcolor: '#F2EEE6',
+            aspectRatio: "16 / 9",
+            bgcolor: "#F2EEE6",
             borderRadius: 1,
-            border: '1px dashed',
-            borderColor: 'divider',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'text.secondary',
+            border: "1px dashed",
+            borderColor: "divider",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "text.secondary",
             fontSize: 13,
           }}
         >
           No photos yet. Add up to {MAX_PHOTOS} JPG/PNG/WEBP images.
         </Box>
       ) : (
-        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 1 }}>
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: "repeat(2, 1fr)",
+            gap: 1,
+          }}
+        >
           {hospital.photos.map((p) => (
             <Box
               key={p.s3Key}
               sx={{
-                position: 'relative',
-                aspectRatio: '4 / 3',
+                position: "relative",
+                aspectRatio: "4 / 3",
                 borderRadius: 1,
-                overflow: 'hidden',
-                bgcolor: '#F2EEE6',
-                '&:hover .photo-actions': { opacity: 1 },
+                overflow: "hidden",
+                bgcolor: "#F2EEE6",
+                "&:hover .photo-actions": { opacity: 1 },
               }}
             >
               <Box
@@ -217,19 +248,24 @@ function PhotoGallery({ hospital }: { hospital: MyHospital }) {
                 src={p.url}
                 alt={p.fileName}
                 loading="lazy"
-                sx={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                sx={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                  display: "block",
+                }}
               />
               <Box
                 className="photo-actions"
                 sx={{
-                  position: 'absolute',
+                  position: "absolute",
                   inset: 0,
-                  bgcolor: 'rgba(0,0,0,0.35)',
+                  bgcolor: "rgba(0,0,0,0.35)",
                   opacity: 0,
-                  transition: 'opacity 120ms',
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  justifyContent: 'flex-end',
+                  transition: "opacity 120ms",
+                  display: "flex",
+                  alignItems: "flex-start",
+                  justifyContent: "flex-end",
                   p: 0.5,
                 }}
               >
@@ -237,10 +273,16 @@ function PhotoGallery({ hospital }: { hospital: MyHospital }) {
                   <IconButton
                     size="small"
                     onClick={() => void handleDelete(p.s3Key)}
-                    sx={{ bgcolor: 'rgba(255,255,255,0.92)', '&:hover': { bgcolor: '#FFFFFF' } }}
+                    sx={{
+                      bgcolor: "rgba(255,255,255,0.92)",
+                      "&:hover": { bgcolor: "#FFFFFF" },
+                    }}
                     aria-label="Remove photo"
                   >
-                    <DeleteOutlineIcon fontSize="small" sx={{ color: '#B91C1C' }} />
+                    <DeleteOutlineIcon
+                      fontSize="small"
+                      sx={{ color: "#B91C1C" }}
+                    />
                   </IconButton>
                 </Tooltip>
               </Box>
@@ -266,7 +308,10 @@ export function HospitalProfilePage() {
   if (isLoading) {
     return (
       <>
-        <PageHeader title="Hospital Profile" subtitle="Your hospital's details on EMERHNET." />
+        <PageHeader
+          title="Hospital Profile"
+          subtitle="Your hospital's details on EMERHNET."
+        />
         <Skeleton height={120} sx={{ mb: 2 }} />
         <Skeleton height={320} />
       </>
@@ -279,7 +324,11 @@ export function HospitalProfilePage() {
         <PageHeader title="Hospital Profile" />
         <Alert
           severity="error"
-          action={<Button size="small" onClick={() => void refetch()}>Retry</Button>}
+          action={
+            <Button size="small" onClick={() => void refetch()}>
+              Retry
+            </Button>
+          }
         >
           Failed to load profile.
         </Alert>
@@ -289,7 +338,8 @@ export function HospitalProfilePage() {
 
   const pincodeValid = /^\d{6}$/.test(form.pincode);
   const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.hospitalEmail);
-  const canSave = pincodeValid && emailValid && form.description.length <= MAX_DESC;
+  const canSave =
+    pincodeValid && emailValid && form.description.length <= MAX_DESC;
 
   const onCancel = () => {
     setForm(blankForm(hospital));
@@ -309,14 +359,20 @@ export function HospitalProfilePage() {
         },
         description: form.description,
       });
-      enqueueSnackbar('Profile updated.', { variant: 'success' });
+      enqueueSnackbar("Profile updated.", { variant: "success" });
       setEditing(false);
     } catch (err) {
-      enqueueSnackbar(getApiErrorMessage(err, 'Failed to update profile.'), { variant: 'error' });
+      enqueueSnackbar(getApiErrorMessage(err, "Failed to update profile."), {
+        variant: "error",
+      });
     }
   };
 
-  const initials = hospital.adminContact.name.split(' ').map((n) => n[0]).slice(0, 2).join('');
+  const initials = hospital.adminContact.name
+    .split(" ")
+    .map((n) => n[0])
+    .slice(0, 2)
+    .join("");
 
   return (
     <>
@@ -325,7 +381,7 @@ export function HospitalProfilePage() {
         subtitle="Your hospital's details on EMERHNET."
         action={
           editing ? (
-            <Box sx={{ display: 'flex', gap: 1.5 }}>
+            <Box sx={{ display: "flex", gap: 1.5 }}>
               <Button
                 variant="outlined"
                 onClick={onCancel}
@@ -340,7 +396,7 @@ export function HospitalProfilePage() {
                 disabled={!canSave || updateMutation.isPending}
                 sx={{ height: 40, fontWeight: 600 }}
               >
-                {updateMutation.isPending ? 'Saving…' : 'Save changes'}
+                {updateMutation.isPending ? "Saving…" : "Save changes"}
               </Button>
             </Box>
           ) : (
@@ -357,20 +413,36 @@ export function HospitalProfilePage() {
       />
 
       <div className="grid grid-cols-5 gap-4">
-        <Box sx={{ gridColumn: 'span 3', display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <Box
+          sx={{
+            gridColumn: "span 3",
+            display: "flex",
+            flexDirection: "column",
+            gap: 2,
+          }}
+        >
           {editing && (
             <Alert severity="warning" icon={<InfoOutlinedIcon />}>
-              Hospital name, NIN, category, geo-coordinates, state, and empanelment are locked.
-              Contact Galas for a re-approval request to change them.
+              Hospital name, NIN, category, geo-coordinates, state, and
+              empanelment are locked. Contact Galas for a re-approval request to
+              change them.
             </Alert>
           )}
 
           <SectionCard title="Identity">
             <div className="grid grid-cols-2 gap-4">
-              <ReadRow label="Hospital Name" value={hospital.hospitalName} locked />
+              <ReadRow
+                label="Hospital Name"
+                value={hospital.hospitalName}
+                locked
+              />
               <ReadRow label="NIN" value={hospital.nin} locked />
               <ReadRow label="Category" value={hospital.category} locked />
-              <ReadRow label="CEA Licence" value={hospital.ceaLicenceNumber || '—'} locked />
+              <ReadRow
+                label="CEA Licence"
+                value={hospital.ceaLicenceNumber || "—"}
+                locked
+              />
             </div>
           </SectionCard>
 
@@ -381,27 +453,42 @@ export function HospitalProfilePage() {
                   <TextField
                     label="Hospital Email"
                     value={form.hospitalEmail}
-                    onChange={(e) => setForm({ ...form, hospitalEmail: e.target.value })}
+                    onChange={(e) =>
+                      setForm({ ...form, hospitalEmail: e.target.value })
+                    }
                     error={!emailValid}
-                    helperText={!emailValid ? 'Enter a valid email.' : ''}
+                    helperText={!emailValid ? "Enter a valid email." : ""}
                   />
                   <TextField
                     label="Hospital Phone"
                     value={form.hospitalPhone}
-                    onChange={(e) => setForm({ ...form, hospitalPhone: e.target.value })}
+                    onChange={(e) =>
+                      setForm({ ...form, hospitalPhone: e.target.value })
+                    }
                   />
                   <TextField
                     label="Visiting Hours"
                     value={form.visitingHours}
-                    onChange={(e) => setForm({ ...form, visitingHours: e.target.value })}
-                    sx={{ gridColumn: 'span 2' }}
+                    onChange={(e) =>
+                      setForm({ ...form, visitingHours: e.target.value })
+                    }
+                    sx={{ gridColumn: "span 2" }}
                   />
                 </>
               ) : (
                 <>
-                  <ReadRow label="Hospital Email" value={hospital.contact.email} />
-                  <ReadRow label="Hospital Phone" value={hospital.contact.phone} />
-                  <ReadRow label="Visiting Hours" value={hospital.visitingHours} />
+                  <ReadRow
+                    label="Hospital Email"
+                    value={hospital.contact.email}
+                  />
+                  <ReadRow
+                    label="Hospital Phone"
+                    value={hospital.contact.phone}
+                  />
+                  <ReadRow
+                    label="Visiting Hours"
+                    value={hospital.visitingHours}
+                  />
                 </>
               )}
             </div>
@@ -430,25 +517,41 @@ export function HospitalProfilePage() {
                     value={form.city}
                     onChange={(e) => setForm({ ...form, city: e.target.value })}
                   />
-                  <TextField label="State" value={hospital.address.state} disabled />
+                  <TextField
+                    label="State"
+                    value={hospital.address.state}
+                    disabled
+                  />
                   <TextField
                     label="Pincode"
                     value={form.pincode}
-                    onChange={(e) => setForm({ ...form, pincode: e.target.value.slice(0, 6) })}
+                    onChange={(e) =>
+                      setForm({ ...form, pincode: e.target.value.slice(0, 6) })
+                    }
                     error={!pincodeValid}
-                    helperText={!pincodeValid ? 'Pincode must be 6 digits.' : ''}
+                    helperText={
+                      !pincodeValid ? "Pincode must be 6 digits." : ""
+                    }
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <ReadRow label="Latitude" value={String(hospital.address.latitude)} locked />
-                  <ReadRow label="Longitude" value={String(hospital.address.longitude)} locked />
+                  <ReadRow
+                    label="Latitude"
+                    value={String(hospital.address.latitude)}
+                    locked
+                  />
+                  <ReadRow
+                    label="Longitude"
+                    value={String(hospital.address.longitude)}
+                    locked
+                  />
                 </div>
               </>
             ) : (
               <>
                 <ReadRow
                   label="Address"
-                  value={`${hospital.address.line1}${hospital.address.line2 ? ', ' + hospital.address.line2 : ''}`}
+                  value={`${hospital.address.line1}${hospital.address.line2 ? ", " + hospital.address.line2 : ""}`}
                 />
                 <div className="grid grid-cols-3 gap-4 mt-2">
                   <ReadRow label="City" value={hospital.address.city} />
@@ -456,28 +559,56 @@ export function HospitalProfilePage() {
                   <ReadRow label="Pincode" value={hospital.address.pincode} />
                 </div>
                 <div className="grid grid-cols-2 gap-4 mt-2">
-                  <ReadRow label="Latitude" value={String(hospital.address.latitude)} locked />
-                  <ReadRow label="Longitude" value={String(hospital.address.longitude)} locked />
+                  <ReadRow
+                    label="Latitude"
+                    value={String(hospital.address.latitude)}
+                    locked
+                  />
+                  <ReadRow
+                    label="Longitude"
+                    value={String(hospital.address.longitude)}
+                    locked
+                  />
                 </div>
               </>
             )}
-            <MapEmbed lat={hospital.address.latitude} lng={hospital.address.longitude} />
+            <MapEmbed
+              lat={hospital.address.latitude}
+              lng={hospital.address.longitude}
+            />
           </SectionCard>
 
           <SectionCard title="Empanelment">
-            <Box sx={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+            <Box sx={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
               {[
-                { label: 'CGHS', value: hospital.cghsEmpanelment },
-                { label: 'Ayushman Bharat', value: hospital.ayushmanEmpanelment },
+                { label: "CGHS", value: hospital.cghsEmpanelment },
+                {
+                  label: "Ayushman Bharat",
+                  value: hospital.ayushmanEmpanelment,
+                },
               ].map(({ label, value }) => (
-                <Box key={label} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <CheckCircleIcon sx={{ color: value ? 'success.main' : 'text.disabled' }} />
+                <Box
+                  key={label}
+                  sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                >
+                  <CheckCircleIcon
+                    sx={{ color: value ? "success.main" : "text.disabled" }}
+                  />
                   <Box>
-                    <Typography variant="caption" sx={{ color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 500, display: 'block' }}>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: "text.secondary",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.04em",
+                        fontWeight: 500,
+                        display: "block",
+                      }}
+                    >
                       {label}
                     </Typography>
                     <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                      {value ? 'Yes' : 'No'}
+                      {value ? "Yes" : "No"}
                     </Typography>
                   </Box>
                 </Box>
@@ -488,8 +619,18 @@ export function HospitalProfilePage() {
           <SectionCard title="Description">
             {editing ? (
               <>
-                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 0.5 }}>
-                  <Typography variant="caption" sx={{ color: form.description.length > MAX_DESC ? 'error.main' : 'text.secondary' }}>
+                <Box
+                  sx={{ display: "flex", justifyContent: "flex-end", mb: 0.5 }}
+                >
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color:
+                        form.description.length > MAX_DESC
+                          ? "error.main"
+                          : "text.secondary",
+                    }}
+                  >
                     {form.description.length} / {MAX_DESC}
                   </Typography>
                 </Box>
@@ -498,51 +639,99 @@ export function HospitalProfilePage() {
                   rows={8}
                   fullWidth
                   value={form.description}
-                  onChange={(e) => setForm({ ...form, description: e.target.value.slice(0, MAX_DESC) })}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      description: e.target.value.slice(0, MAX_DESC),
+                    })
+                  }
                 />
               </>
             ) : (
-              <Typography variant="body2" sx={{ whiteSpace: 'pre-line', lineHeight: 1.6 }}>
-                {hospital.description || 'No description provided.'}
+              <Typography
+                variant="body2"
+                sx={{ whiteSpace: "pre-line", lineHeight: 1.6 }}
+              >
+                {hospital.description || "No description provided."}
               </Typography>
             )}
           </SectionCard>
         </Box>
 
-        <Box sx={{ gridColumn: 'span 2', display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <Box
+          sx={{
+            gridColumn: "span 2",
+            display: "flex",
+            flexDirection: "column",
+            gap: 2,
+          }}
+        >
           <PhotoGallery hospital={hospital} />
 
           <SectionCard title="Metadata">
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
-              <ReadRow label="Registered" value={formatIst(hospital.createdAt)} />
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 1.25 }}>
+              <ReadRow
+                label="Registered"
+                value={formatIst(hospital.createdAt)}
+              />
               {hospital.approvedAt && (
-                <ReadRow label="Approved" value={formatIst(hospital.approvedAt)} />
+                <ReadRow
+                  label="Approved"
+                  value={formatIst(hospital.approvedAt)}
+                />
               )}
-              <ReadRow label="Last updated" value={formatRelative(hospital.updatedAt)} />
+              <ReadRow
+                label="Last updated"
+                value={formatRelative(hospital.updatedAt)}
+              />
               <ReadRow label="Tracking ID" value={hospital.trackingId} />
               <Box>
-                <Typography variant="caption" sx={{ color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 500, display: 'block', mb: 0.5 }}>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: "text.secondary",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.04em",
+                    fontWeight: 500,
+                    display: "block",
+                    mb: 0.5,
+                  }}
+                >
                   Status
                 </Typography>
-                <StatusChip label={STATUS_LABELS[hospital.status]} tone={STATUS_TONE[hospital.status]} />
+                <StatusChip
+                  label={STATUS_LABELS[hospital.status]}
+                  tone={STATUS_TONE[hospital.status]}
+                />
               </Box>
             </Box>
           </SectionCard>
 
           <SectionCard title="Hospital Administrator">
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <Avatar sx={{ width: 48, height: 48, bgcolor: 'primary.main', fontSize: 16 }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+              <Avatar
+                sx={{
+                  width: 48,
+                  height: 48,
+                  bgcolor: "primary.main",
+                  fontSize: 16,
+                }}
+              >
                 {initials}
               </Avatar>
               <Box>
                 <Typography sx={{ fontSize: 14, fontWeight: 600 }}>
                   {hospital.adminContact.name}
                 </Typography>
-                <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>
+                <Typography sx={{ fontSize: 12, color: "text.secondary" }}>
                   Hospital Administrator
                 </Typography>
-                <Typography sx={{ fontSize: 13, mt: 0.5 }}>{hospital.adminContact.email}</Typography>
-                <Typography sx={{ fontSize: 13 }}>{hospital.adminContact.phone}</Typography>
+                <Typography sx={{ fontSize: 13, mt: 0.5 }}>
+                  {hospital.adminContact.email}
+                </Typography>
+                <Typography sx={{ fontSize: 13 }}>
+                  {hospital.adminContact.phone}
+                </Typography>
               </Box>
             </Box>
           </SectionCard>

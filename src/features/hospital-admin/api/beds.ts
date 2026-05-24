@@ -1,5 +1,5 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { api } from '@/shared/lib/api';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/shared/lib/api";
 
 export type ApiBed = {
   id: string;
@@ -14,7 +14,7 @@ export type ApiBed = {
 export type CreateBedInput = { type: string; total: number; occupied?: number };
 export type UpdateBedInput = Partial<CreateBedInput>;
 
-const key = ['beds'] as const;
+const key = ["beds"] as const;
 
 export function useBeds() {
   return useQuery({
@@ -23,7 +23,7 @@ export function useBeds() {
       const { data } = await api.get<{
         items: ApiBed[];
         totals: { total: number; occupied: number };
-      }>('/beds');
+      }>("/beds");
       return data;
     },
   });
@@ -33,7 +33,7 @@ export function useCreateBed() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (input: CreateBedInput) => {
-      const { data } = await api.post<ApiBed>('/beds', input);
+      const { data } = await api.post<ApiBed>("/beds", input);
       return data;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: key }),
@@ -43,7 +43,13 @@ export function useCreateBed() {
 export function useUpdateBed() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, input }: { id: string; input: UpdateBedInput }) => {
+    mutationFn: async ({
+      id,
+      input,
+    }: {
+      id: string;
+      input: UpdateBedInput;
+    }) => {
       const { data } = await api.patch<ApiBed>(`/beds/${id}`, input);
       return data;
     },

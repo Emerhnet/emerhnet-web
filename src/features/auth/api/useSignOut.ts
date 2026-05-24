@@ -1,10 +1,10 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { api } from '@/shared/lib/api';
-import { useAuthStore } from '../store';
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/shared/lib/api";
+import { useAuthStore } from "../store";
 
 async function signOut(): Promise<void> {
   try {
-    await api.post('/auth/sign-out');
+    await api.post("/auth/sign-out");
   } catch {
     // Sign-out is idempotent — even if it 401s, clear locally.
   }

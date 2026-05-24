@@ -1,8 +1,8 @@
-import type { ReactNode } from 'react';
-import Box from '@mui/material/Box';
-import Card from '@mui/material/Card';
-import Typography from '@mui/material/Typography';
-import Divider from '@mui/material/Divider';
+import type { ReactNode } from "react";
+import Box from "@mui/material/Box";
+import Card from "@mui/material/Card";
+import Typography from "@mui/material/Typography";
+import Divider from "@mui/material/Divider";
 
 export function SectionCard({
   title,
@@ -19,9 +19,9 @@ export function SectionCard({
     <Card>
       <Box
         sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
           px: 3,
           py: 2,
         }}

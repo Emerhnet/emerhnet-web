@@ -1,16 +1,21 @@
-import { useEffect, useState } from 'react';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
-import Typography from '@mui/material/Typography';
-import Box from '@mui/material/Box';
-import Alert from '@mui/material/Alert';
-import { StatusChip } from '@/shared/components/StatusChip';
+import { useEffect, useState } from "react";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import DialogActions from "@mui/material/DialogActions";
+import Button from "@mui/material/Button";
+import TextField from "@mui/material/TextField";
+import Typography from "@mui/material/Typography";
+import Box from "@mui/material/Box";
+import Alert from "@mui/material/Alert";
+import { StatusChip } from "@/shared/components/StatusChip";
 
-export type BedRow = { id: string; type: string; total: number; occupied: number };
+export type BedRow = {
+  id: string;
+  type: string;
+  total: number;
+  occupied: number;
+};
 
 export function UpdateBedCountsDialog({
   open,
@@ -41,9 +46,17 @@ export function UpdateBedCountsDialog({
   const handleConfirm = () => onConfirm({ total, occupied });
 
   return (
-    <Dialog open={open} onClose={onCancel} maxWidth="xs" fullWidth PaperProps={{ sx: { width: 480 } }}>
+    <Dialog
+      open={open}
+      onClose={onCancel}
+      maxWidth="xs"
+      fullWidth
+      PaperProps={{ sx: { width: 480 } }}
+    >
       <DialogTitle sx={{ pb: 1 }}>
-        <Typography sx={{ fontSize: 18, fontWeight: 600 }}>Update bed counts</Typography>
+        <Typography sx={{ fontSize: 18, fontWeight: 600 }}>
+          Update bed counts
+        </Typography>
         <Box sx={{ mt: 1 }}>
           {row && <StatusChip label={row.type} tone="primary" />}
         </Box>
@@ -66,14 +79,14 @@ export function UpdateBedCountsDialog({
             value={occupied}
             onChange={(e) => setOccupied(Math.max(0, Number(e.target.value)))}
             error={occupied > total}
-            helperText={occupied > total ? 'Occupied cannot exceed total.' : ''}
+            helperText={occupied > total ? "Occupied cannot exceed total." : ""}
           />
         </div>
         <Typography
           sx={{
             fontSize: 18,
             fontWeight: 600,
-            color: available > 0 ? 'success.main' : 'error.main',
+            color: available > 0 ? "success.main" : "error.main",
             mt: 2,
             mb: 1.5,
           }}
@@ -88,8 +101,12 @@ export function UpdateBedCountsDialog({
         <Button variant="outlined" onClick={onCancel} disabled={submitting}>
           Cancel
         </Button>
-        <Button variant="contained" onClick={handleConfirm} disabled={!valid || submitting}>
-          {submitting ? 'Saving...' : 'Save changes'}
+        <Button
+          variant="contained"
+          onClick={handleConfirm}
+          disabled={!valid || submitting}
+        >
+          {submitting ? "Saving..." : "Save changes"}
         </Button>
       </DialogActions>
     </Dialog>

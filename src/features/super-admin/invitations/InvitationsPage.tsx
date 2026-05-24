@@ -1,29 +1,29 @@
-import { useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import Box from '@mui/material/Box';
-import Card from '@mui/material/Card';
-import Typography from '@mui/material/Typography';
-import TextField from '@mui/material/TextField';
-import MenuItem from '@mui/material/MenuItem';
-import Button from '@mui/material/Button';
-import Link from '@mui/material/Link';
-import IconButton from '@mui/material/IconButton';
-import Menu from '@mui/material/Menu';
-import Tooltip from '@mui/material/Tooltip';
-import Alert from '@mui/material/Alert';
-import Skeleton from '@mui/material/Skeleton';
-import InputAdornment from '@mui/material/InputAdornment';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { DataGrid, type GridColDef } from '@mui/x-data-grid';
-import { useSnackbar } from 'notistack';
-import SearchIcon from '@mui/icons-material/Search';
-import SendIcon from '@mui/icons-material/Send';
-import RefreshIcon from '@mui/icons-material/Refresh';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
-import { PageHeader } from '@/shared/components/PageHeader';
-import { StatusChip, type StatusTone } from '@/shared/components/StatusChip';
-import { formatIst, formatRelative } from '@/shared/lib/datetime';
-import { getApiErrorMessage } from '@/shared/lib/apiError';
+import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import Box from "@mui/material/Box";
+import Card from "@mui/material/Card";
+import Typography from "@mui/material/Typography";
+import TextField from "@mui/material/TextField";
+import MenuItem from "@mui/material/MenuItem";
+import Button from "@mui/material/Button";
+import Link from "@mui/material/Link";
+import IconButton from "@mui/material/IconButton";
+import Menu from "@mui/material/Menu";
+import Tooltip from "@mui/material/Tooltip";
+import Alert from "@mui/material/Alert";
+import Skeleton from "@mui/material/Skeleton";
+import InputAdornment from "@mui/material/InputAdornment";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { DataGrid, type GridColDef } from "@mui/x-data-grid";
+import { useSnackbar } from "notistack";
+import SearchIcon from "@mui/icons-material/Search";
+import SendIcon from "@mui/icons-material/Send";
+import RefreshIcon from "@mui/icons-material/Refresh";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import { PageHeader } from "@/shared/components/PageHeader";
+import { StatusChip, type StatusTone } from "@/shared/components/StatusChip";
+import { formatIst, formatRelative } from "@/shared/lib/datetime";
+import { getApiErrorMessage } from "@/shared/lib/apiError";
 import {
   useInvitations,
   useSendInvitation,
@@ -31,54 +31,61 @@ import {
   useCancelInvitation,
   type ApiInvitation,
   type ApiInvitationStatus,
-} from '../api/invitations';
-import { SendInvitationDialog } from './components/SendInvitationDialog';
+} from "../api/invitations";
+import { SendInvitationDialog } from "./components/SendInvitationDialog";
 
 const STATUS_LABELS: Record<ApiInvitationStatus, string> = {
-  sent: 'Sent',
-  opened: 'Opened',
-  submitted: 'Submitted',
-  approved: 'Approved',
-  expired: 'Expired',
-  cancelled: 'Cancelled',
+  sent: "Sent",
+  opened: "Opened",
+  submitted: "Submitted",
+  approved: "Approved",
+  expired: "Expired",
+  cancelled: "Cancelled",
 };
 
 const STATUS_TONE: Record<ApiInvitationStatus, StatusTone> = {
-  sent: 'info',
-  opened: 'primary',
-  submitted: 'warning',
-  approved: 'success',
-  expired: 'danger',
-  cancelled: 'muted',
+  sent: "info",
+  opened: "primary",
+  submitted: "warning",
+  approved: "success",
+  expired: "danger",
+  cancelled: "muted",
 };
 
 const STATUSES: ApiInvitationStatus[] = [
-  'sent',
-  'opened',
-  'submitted',
-  'approved',
-  'expired',
-  'cancelled',
+  "sent",
+  "opened",
+  "submitted",
+  "approved",
+  "expired",
+  "cancelled",
 ];
 
-function expiresIn(iso: string, status: ApiInvitationStatus): { text: string; tone: 'normal' | 'warning' | 'danger' } {
-  if (status === 'submitted' || status === 'approved' || status === 'cancelled') {
-    return { text: '—', tone: 'normal' };
+function expiresIn(
+  iso: string,
+  status: ApiInvitationStatus,
+): { text: string; tone: "normal" | "warning" | "danger" } {
+  if (
+    status === "submitted" ||
+    status === "approved" ||
+    status === "cancelled"
+  ) {
+    return { text: "—", tone: "normal" };
   }
   const expires = new Date(iso).getTime();
   const now = Date.now();
   const diff = expires - now;
-  if (diff <= 0) return { text: 'Expired', tone: 'danger' };
+  if (diff <= 0) return { text: "Expired", tone: "danger" };
   const days = Math.floor(diff / (24 * 60 * 60 * 1000));
   const hours = Math.floor((diff % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
-  const tone: 'normal' | 'warning' | 'danger' = days < 2 ? 'warning' : 'normal';
+  const tone: "normal" | "warning" | "danger" = days < 2 ? "warning" : "normal";
   return { text: `In ${days}d ${hours}h`, tone };
 }
 
-const EXPIRES_COLOR: Record<'normal' | 'warning' | 'danger', string> = {
-  normal: 'inherit',
-  warning: '#8B5A00',
-  danger: '#842029',
+const EXPIRES_COLOR: Record<"normal" | "warning" | "danger", string> = {
+  normal: "inherit",
+  warning: "#8B5A00",
+  danger: "#842029",
 };
 
 function RowMenu({
@@ -93,10 +100,18 @@ function RowMenu({
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
   return (
     <>
-      <IconButton size="small" onClick={(e) => setAnchor(e.currentTarget)} aria-label="Actions">
+      <IconButton
+        size="small"
+        onClick={(e) => setAnchor(e.currentTarget)}
+        aria-label="Actions"
+      >
         <MoreVertIcon fontSize="small" />
       </IconButton>
-      <Menu anchorEl={anchor} open={Boolean(anchor)} onClose={() => setAnchor(null)}>
+      <Menu
+        anchorEl={anchor}
+        open={Boolean(anchor)}
+        onClose={() => setAnchor(null)}
+      >
         <MenuItem
           disabled={!canMutate}
           onClick={() => {
@@ -112,7 +127,7 @@ function RowMenu({
             setAnchor(null);
             onCancel();
           }}
-          sx={{ color: 'error.main' }}
+          sx={{ color: "error.main" }}
         >
           Cancel
         </MenuItem>
@@ -126,13 +141,13 @@ export function InvitationsPage() {
   const { enqueueSnackbar } = useSnackbar();
   const [sendOpen, setSendOpen] = useState(false);
 
-  const q = params.get('q') ?? '';
-  const statusParam = params.get('status') ?? '';
+  const q = params.get("q") ?? "";
+  const statusParam = params.get("status") ?? "";
   const status = (STATUSES as string[]).includes(statusParam)
     ? (statusParam as ApiInvitationStatus)
     : undefined;
-  const fromStr = params.get('from') ?? undefined;
-  const toStr = params.get('to') ?? undefined;
+  const fromStr = params.get("from") ?? undefined;
+  const toStr = params.get("to") ?? undefined;
   const from = fromStr ? new Date(fromStr) : null;
   const to = toStr ? new Date(toStr) : null;
 
@@ -156,7 +171,8 @@ export function InvitationsPage() {
 
   const rows = data?.items ?? [];
   const hasFilters = Boolean(q || status || fromStr || toStr);
-  const resetFilters = () => setParams(new URLSearchParams(), { replace: true });
+  const resetFilters = () =>
+    setParams(new URLSearchParams(), { replace: true });
 
   const handleSend = async (p: {
     hospitalName: string;
@@ -172,10 +188,10 @@ export function InvitationsPage() {
         result.emailSent
           ? `Invitation sent to ${result.invitation.recipientEmail}.`
           : `Invitation created, but email delivery failed. Please retry.`,
-        { variant: result.emailSent ? 'success' : 'warning' },
+        { variant: result.emailSent ? "success" : "warning" },
       );
     } catch (err) {
-      enqueueSnackbar(getApiErrorMessage(err), { variant: 'error' });
+      enqueueSnackbar(getApiErrorMessage(err), { variant: "error" });
     }
   };
 
@@ -186,37 +202,52 @@ export function InvitationsPage() {
         result.emailSent
           ? `Reissued to ${row.recipientEmail}.`
           : `Reissued, but email delivery failed.`,
-        { variant: result.emailSent ? 'success' : 'warning' },
+        { variant: result.emailSent ? "success" : "warning" },
       );
     } catch (err) {
-      enqueueSnackbar(getApiErrorMessage(err), { variant: 'error' });
+      enqueueSnackbar(getApiErrorMessage(err), { variant: "error" });
     }
   };
 
   const handleCancel = async (row: ApiInvitation) => {
     try {
       await cancelMutation.mutateAsync(row.id);
-      enqueueSnackbar(`Cancelled invitation to ${row.recipientEmail}.`, { variant: 'success' });
+      enqueueSnackbar(`Cancelled invitation to ${row.recipientEmail}.`, {
+        variant: "success",
+      });
     } catch (err) {
-      enqueueSnackbar(getApiErrorMessage(err), { variant: 'error' });
+      enqueueSnackbar(getApiErrorMessage(err), { variant: "error" });
     }
   };
 
   const columns: GridColDef<ApiInvitation>[] = [
-    { field: 'recipientEmail', headerName: 'Recipient Email', flex: 1.4, minWidth: 240 },
-    { field: 'hospitalName', headerName: 'Hospital Name', flex: 1.4, minWidth: 220 },
     {
-      field: 'status',
-      headerName: 'Status',
+      field: "recipientEmail",
+      headerName: "Recipient Email",
+      flex: 1.4,
+      minWidth: 240,
+    },
+    {
+      field: "hospitalName",
+      headerName: "Hospital Name",
+      flex: 1.4,
+      minWidth: 220,
+    },
+    {
+      field: "status",
+      headerName: "Status",
       flex: 0.8,
       minWidth: 130,
       renderCell: ({ row }) => (
-        <StatusChip label={STATUS_LABELS[row.status]} tone={STATUS_TONE[row.status]} />
+        <StatusChip
+          label={STATUS_LABELS[row.status]}
+          tone={STATUS_TONE[row.status]}
+        />
       ),
     },
     {
-      field: 'sent',
-      headerName: 'Sent',
+      field: "sent",
+      headerName: "Sent",
       flex: 0.7,
       minWidth: 110,
       valueGetter: (_v, row) => row.createdAt,
@@ -227,8 +258,8 @@ export function InvitationsPage() {
       ),
     },
     {
-      field: 'expiresIn',
-      headerName: 'Expires In',
+      field: "expiresIn",
+      headerName: "Expires In",
       flex: 0.8,
       minWidth: 130,
       sortable: false,
@@ -238,7 +269,7 @@ export function InvitationsPage() {
           <Typography
             sx={{
               fontSize: 14,
-              fontWeight: e.tone !== 'normal' ? 600 : 400,
+              fontWeight: e.tone !== "normal" ? 600 : 400,
               color: EXPIRES_COLOR[e.tone],
             }}
           >
@@ -248,16 +279,19 @@ export function InvitationsPage() {
       },
     },
     {
-      field: 'action',
-      headerName: 'Action',
+      field: "action",
+      headerName: "Action",
       flex: 0.4,
       minWidth: 80,
       sortable: false,
       filterable: false,
-      align: 'right',
-      headerAlign: 'right',
+      align: "right",
+      headerAlign: "right",
       renderCell: ({ row }) => {
-        const canMutate = row.status === 'sent' || row.status === 'opened' || row.status === 'expired';
+        const canMutate =
+          row.status === "sent" ||
+          row.status === "opened" ||
+          row.status === "expired";
         return (
           <RowMenu
             canMutate={canMutate}
@@ -286,17 +320,26 @@ export function InvitationsPage() {
         }
       />
 
-      <Card sx={{ p: 2, mb: 2, display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+      <Card
+        sx={{
+          p: 2,
+          mb: 2,
+          display: "flex",
+          alignItems: "center",
+          gap: 2,
+          flexWrap: "wrap",
+        }}
+      >
         <TextField
           value={q}
-          onChange={(e) => setParam('q', e.target.value || null)}
+          onChange={(e) => setParam("q", e.target.value || null)}
           placeholder="Search by email or hospital name"
           size="small"
           sx={{ width: 280 }}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
-                <SearchIcon fontSize="small" sx={{ color: 'text.secondary' }} />
+                <SearchIcon fontSize="small" sx={{ color: "text.secondary" }} />
               </InputAdornment>
             ),
           }}
@@ -305,8 +348,10 @@ export function InvitationsPage() {
           select
           size="small"
           label="Status"
-          value={status ?? 'all'}
-          onChange={(e) => setParam('status', e.target.value === 'all' ? null : e.target.value)}
+          value={status ?? "all"}
+          onChange={(e) =>
+            setParam("status", e.target.value === "all" ? null : e.target.value)
+          }
           sx={{ width: 160 }}
         >
           <MenuItem value="all">All</MenuItem>
@@ -319,14 +364,18 @@ export function InvitationsPage() {
         <DatePicker
           label="From"
           value={from}
-          onChange={(d) => setParam('from', d ? d.toISOString().slice(0, 10) : null)}
-          slotProps={{ textField: { size: 'small', sx: { width: 160 } } }}
+          onChange={(d) =>
+            setParam("from", d ? d.toISOString().slice(0, 10) : null)
+          }
+          slotProps={{ textField: { size: "small", sx: { width: 160 } } }}
         />
         <DatePicker
           label="To"
           value={to}
-          onChange={(d) => setParam('to', d ? d.toISOString().slice(0, 10) : null)}
-          slotProps={{ textField: { size: 'small', sx: { width: 160 } } }}
+          onChange={(d) =>
+            setParam("to", d ? d.toISOString().slice(0, 10) : null)
+          }
+          slotProps={{ textField: { size: "small", sx: { width: 160 } } }}
         />
         <Box sx={{ flex: 1 }} />
         {hasFilters && (
@@ -335,7 +384,13 @@ export function InvitationsPage() {
             type="button"
             onClick={resetFilters}
             underline="hover"
-            sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, fontSize: 13, fontWeight: 500 }}
+            sx={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 0.5,
+              fontSize: 13,
+              fontWeight: 500,
+            }}
           >
             <RefreshIcon fontSize="small" /> Reset
           </Link>
@@ -363,35 +418,42 @@ export function InvitationsPage() {
           ))}
         </Card>
       ) : (
-        <Card sx={{ overflow: 'hidden' }}>
+        <Card sx={{ overflow: "hidden" }}>
           <DataGrid
             rows={rows}
             columns={columns}
             rowHeight={56}
             getRowId={(r) => r.id}
-            initialState={{ pagination: { paginationModel: { pageSize: 20, page: 0 } } }}
+            initialState={{
+              pagination: { paginationModel: { pageSize: 20, page: 0 } },
+            }}
             pageSizeOptions={[20, 50, 100]}
             disableRowSelectionOnClick
             autoHeight
             sx={{
-              border: 'none',
-              '& .MuiDataGrid-columnHeaderTitle': {
+              border: "none",
+              "& .MuiDataGrid-columnHeaderTitle": {
                 fontSize: 13,
                 fontWeight: 500,
-                textTransform: 'uppercase',
-                letterSpacing: '0.04em',
-                color: 'text.secondary',
+                textTransform: "uppercase",
+                letterSpacing: "0.04em",
+                color: "text.secondary",
               },
-              '& .MuiDataGrid-cell': { display: 'flex', alignItems: 'center' },
-              '& .MuiDataGrid-row:hover': { bgcolor: '#FAFAFA' },
-              '& .MuiDataGrid-cell:focus, & .MuiDataGrid-cell:focus-within': { outline: 'none' },
+              "& .MuiDataGrid-cell": { display: "flex", alignItems: "center" },
+              "& .MuiDataGrid-row:hover": { bgcolor: "#FAFAFA" },
+              "& .MuiDataGrid-cell:focus, & .MuiDataGrid-cell:focus-within": {
+                outline: "none",
+              },
             }}
           />
         </Card>
       )}
 
       {!isLoading && (
-        <Typography variant="caption" sx={{ display: 'block', mt: 1, color: 'text.secondary' }}>
+        <Typography
+          variant="caption"
+          sx={{ display: "block", mt: 1, color: "text.secondary" }}
+        >
           Showing {rows.length} of {data?.total ?? 0}.
         </Typography>
       )}

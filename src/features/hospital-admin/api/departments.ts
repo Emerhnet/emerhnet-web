@@ -1,5 +1,5 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { api } from '@/shared/lib/api';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/shared/lib/api";
 
 export type ApiDepartment = {
   id: string;
@@ -17,18 +17,25 @@ export type CreateDepartmentInput = {
   headDoctorId?: string | null;
 };
 
-export type UpdateDepartmentInput = Partial<CreateDepartmentInput> & { active?: boolean };
+export type UpdateDepartmentInput = Partial<CreateDepartmentInput> & {
+  active?: boolean;
+};
 
-const key = ['departments'] as const;
+const key = ["departments"] as const;
 
-export function useDepartments(filters: { search?: string; active?: boolean } = {}) {
+export function useDepartments(
+  filters: { search?: string; active?: boolean } = {},
+) {
   return useQuery({
     queryKey: [...key, filters] as const,
     queryFn: async () => {
       const params = new URLSearchParams();
-      if (filters.search) params.set('search', filters.search);
-      if (filters.active !== undefined) params.set('active', String(filters.active));
-      const { data } = await api.get<{ items: ApiDepartment[] }>(`/departments?${params}`);
+      if (filters.search) params.set("search", filters.search);
+      if (filters.active !== undefined)
+        params.set("active", String(filters.active));
+      const { data } = await api.get<{ items: ApiDepartment[] }>(
+        `/departments?${params}`,
+      );
       return data.items;
     },
   });
@@ -38,7 +45,7 @@ export function useCreateDepartment() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (input: CreateDepartmentInput) => {
-      const { data } = await api.post<ApiDepartment>('/departments', input);
+      const { data } = await api.post<ApiDepartment>("/departments", input);
       return data;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: key }),
@@ -48,8 +55,17 @@ export function useCreateDepartment() {
 export function useUpdateDepartment() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, input }: { id: string; input: UpdateDepartmentInput }) => {
-      const { data } = await api.patch<ApiDepartment>(`/departments/${id}`, input);
+    mutationFn: async ({
+      id,
+      input,
+    }: {
+      id: string;
+      input: UpdateDepartmentInput;
+    }) => {
+      const { data } = await api.patch<ApiDepartment>(
+        `/departments/${id}`,
+        input,
+      );
       return data;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: key }),

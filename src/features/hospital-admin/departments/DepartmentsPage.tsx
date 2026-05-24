@@ -1,29 +1,29 @@
-import { useState } from 'react';
-import Box from '@mui/material/Box';
-import Card from '@mui/material/Card';
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
-import Tooltip from '@mui/material/Tooltip';
-import Alert from '@mui/material/Alert';
-import Skeleton from '@mui/material/Skeleton';
-import AddIcon from '@mui/icons-material/Add';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
-import MedicalServicesIcon from '@mui/icons-material/MedicalServices';
-import { useSnackbar } from 'notistack';
-import { PageHeader } from '@/shared/components/PageHeader';
-import { StatusChip } from '@/shared/components/StatusChip';
-import { getApiErrorMessage } from '@/shared/lib/apiError';
+import { useState } from "react";
+import Box from "@mui/material/Box";
+import Card from "@mui/material/Card";
+import Typography from "@mui/material/Typography";
+import Button from "@mui/material/Button";
+import IconButton from "@mui/material/IconButton";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
+import Tooltip from "@mui/material/Tooltip";
+import Alert from "@mui/material/Alert";
+import Skeleton from "@mui/material/Skeleton";
+import AddIcon from "@mui/icons-material/Add";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import MedicalServicesIcon from "@mui/icons-material/MedicalServices";
+import { useSnackbar } from "notistack";
+import { PageHeader } from "@/shared/components/PageHeader";
+import { StatusChip } from "@/shared/components/StatusChip";
+import { getApiErrorMessage } from "@/shared/lib/apiError";
 import {
   useDepartments,
   useCreateDepartment,
   useUpdateDepartment,
   useDeleteDepartment,
   type ApiDepartment,
-} from '../api/departments';
-import { AddDepartmentDialog } from './components/AddDepartmentDialog';
+} from "../api/departments";
+import { AddDepartmentDialog } from "./components/AddDepartmentDialog";
 
 function DeptCard({
   dept,
@@ -40,25 +40,57 @@ function DeptCard({
   const canDeleteOrDeactivate = dept.doctorCount === 0;
 
   return (
-    <Card sx={{ p: 2.5, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-      <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 1 }}>
+    <Card sx={{ p: 2.5, display: "flex", flexDirection: "column", gap: 1.5 }}>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "flex-start",
+          justifyContent: "space-between",
+          gap: 1,
+        }}
+      >
         <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Typography sx={{ fontSize: 16, fontWeight: 600 }}>{dept.name}</Typography>
+          <Typography sx={{ fontSize: 16, fontWeight: 600 }}>
+            {dept.name}
+          </Typography>
         </Box>
-        <StatusChip label={dept.active ? 'Active' : 'Inactive'} tone={dept.active ? 'success' : 'muted'} />
+        <StatusChip
+          label={dept.active ? "Active" : "Inactive"}
+          tone={dept.active ? "success" : "muted"}
+        />
       </Box>
-      <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-        Head: {dept.headDoctorName ?? 'Not assigned'}
+      <Typography variant="body2" sx={{ color: "text.secondary" }}>
+        Head: {dept.headDoctorName ?? "Not assigned"}
       </Typography>
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 'auto', pt: 1, borderTop: '1px solid', borderColor: 'divider' }}>
-        <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}>
-          <MedicalServicesIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
-          <Typography sx={{ fontSize: 14, fontWeight: 500 }}>{dept.doctorCount} doctors</Typography>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          mt: "auto",
+          pt: 1,
+          borderTop: "1px solid",
+          borderColor: "divider",
+        }}
+      >
+        <Box sx={{ display: "inline-flex", alignItems: "center", gap: 0.75 }}>
+          <MedicalServicesIcon sx={{ fontSize: 16, color: "text.secondary" }} />
+          <Typography sx={{ fontSize: 14, fontWeight: 500 }}>
+            {dept.doctorCount} doctors
+          </Typography>
         </Box>
-        <IconButton size="small" onClick={(e) => setAnchor(e.currentTarget)} aria-label="Actions">
+        <IconButton
+          size="small"
+          onClick={(e) => setAnchor(e.currentTarget)}
+          aria-label="Actions"
+        >
           <MoreVertIcon fontSize="small" />
         </IconButton>
-        <Menu anchorEl={anchor} open={Boolean(anchor)} onClose={() => setAnchor(null)}>
+        <Menu
+          anchorEl={anchor}
+          open={Boolean(anchor)}
+          onClose={() => setAnchor(null)}
+        >
           <MenuItem
             onClick={() => {
               setAnchor(null);
@@ -69,7 +101,11 @@ function DeptCard({
           </MenuItem>
           {dept.active ? (
             <Tooltip
-              title={canDeleteOrDeactivate ? '' : 'Reassign or deactivate all doctors first.'}
+              title={
+                canDeleteOrDeactivate
+                  ? ""
+                  : "Reassign or deactivate all doctors first."
+              }
               placement="left"
             >
               <Box>
@@ -79,7 +115,7 @@ function DeptCard({
                     setAnchor(null);
                     onToggleActive();
                   }}
-                  sx={{ color: 'error.main' }}
+                  sx={{ color: "error.main" }}
                 >
                   Deactivate
                 </MenuItem>
@@ -96,7 +132,11 @@ function DeptCard({
             </MenuItem>
           )}
           <Tooltip
-            title={canDeleteOrDeactivate ? '' : 'Reassign or deactivate all doctors first.'}
+            title={
+              canDeleteOrDeactivate
+                ? ""
+                : "Reassign or deactivate all doctors first."
+            }
             placement="left"
           >
             <Box>
@@ -106,7 +146,7 @@ function DeptCard({
                   setAnchor(null);
                   onDelete();
                 }}
-                sx={{ color: 'error.main' }}
+                sx={{ color: "error.main" }}
               >
                 Delete
               </MenuItem>
@@ -131,10 +171,10 @@ export function DepartmentsPage() {
   const handleCreate = async ({ name }: { name: string }) => {
     try {
       await createMutation.mutateAsync({ name });
-      enqueueSnackbar(`Department "${name}" added.`, { variant: 'success' });
+      enqueueSnackbar(`Department "${name}" added.`, { variant: "success" });
       setAddOpen(false);
     } catch (err) {
-      enqueueSnackbar(getApiErrorMessage(err), { variant: 'error' });
+      enqueueSnackbar(getApiErrorMessage(err), { variant: "error" });
     }
   };
 
@@ -142,29 +182,36 @@ export function DepartmentsPage() {
     if (!editing) return;
     try {
       await updateMutation.mutateAsync({ id: editing.id, input: { name } });
-      enqueueSnackbar(`Department renamed.`, { variant: 'success' });
+      enqueueSnackbar(`Department renamed.`, { variant: "success" });
       setEditing(null);
     } catch (err) {
-      enqueueSnackbar(getApiErrorMessage(err), { variant: 'error' });
+      enqueueSnackbar(getApiErrorMessage(err), { variant: "error" });
     }
   };
 
   const handleToggle = async (dept: ApiDepartment) => {
     try {
-      await updateMutation.mutateAsync({ id: dept.id, input: { active: !dept.active } });
-      enqueueSnackbar(`Department ${dept.active ? 'deactivated' : 'reactivated'}.`, { variant: 'success' });
+      await updateMutation.mutateAsync({
+        id: dept.id,
+        input: { active: !dept.active },
+      });
+      enqueueSnackbar(
+        `Department ${dept.active ? "deactivated" : "reactivated"}.`,
+        { variant: "success" },
+      );
     } catch (err) {
-      enqueueSnackbar(getApiErrorMessage(err), { variant: 'error' });
+      enqueueSnackbar(getApiErrorMessage(err), { variant: "error" });
     }
   };
 
   const handleDelete = async (dept: ApiDepartment) => {
-    if (!window.confirm(`Delete "${dept.name}"? This cannot be undone.`)) return;
+    if (!window.confirm(`Delete "${dept.name}"? This cannot be undone.`))
+      return;
     try {
       await deleteMutation.mutateAsync(dept.id);
-      enqueueSnackbar(`Department deleted.`, { variant: 'success' });
+      enqueueSnackbar(`Department deleted.`, { variant: "success" });
     } catch (err) {
-      enqueueSnackbar(getApiErrorMessage(err), { variant: 'error' });
+      enqueueSnackbar(getApiErrorMessage(err), { variant: "error" });
     }
   };
 
@@ -189,7 +236,11 @@ export function DepartmentsPage() {
         <Alert
           severity="error"
           sx={{ mb: 2 }}
-          action={<Button size="small" onClick={() => void refetch()}>Retry</Button>}
+          action={
+            <Button size="small" onClick={() => void refetch()}>
+              Retry
+            </Button>
+          }
         >
           Failed to load departments.
         </Alert>
@@ -213,7 +264,10 @@ export function DepartmentsPage() {
             />
           ))}
           {departments && departments.length === 0 && (
-            <Typography variant="body2" sx={{ color: 'text.secondary', gridColumn: '1 / -1' }}>
+            <Typography
+              variant="body2"
+              sx={{ color: "text.secondary", gridColumn: "1 / -1" }}
+            >
               No departments yet. Add one to start grouping doctors.
             </Typography>
           )}
@@ -229,7 +283,7 @@ export function DepartmentsPage() {
       <AddDepartmentDialog
         open={Boolean(editing)}
         isPending={updateMutation.isPending}
-        initialName={editing?.name ?? ''}
+        initialName={editing?.name ?? ""}
         title="Rename department"
         submitLabel="Save"
         onCancel={() => setEditing(null)}
