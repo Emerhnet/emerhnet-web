@@ -78,7 +78,7 @@ export function RegistrationLayout() {
 
   if (inviteToken && inviteError) {
     return (
-      <PublicShell width={520}>
+      <PublicShell width={720}>
         <Alert severity="error" sx={{ mb: 2 }}>
           {getApiErrorMessage(error) ||
             "This invitation link is invalid or has expired."}

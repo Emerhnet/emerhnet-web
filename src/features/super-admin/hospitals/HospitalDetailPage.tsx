@@ -7,7 +7,6 @@ import Button from "@mui/material/Button";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import Avatar from "@mui/material/Avatar";
-import Divider from "@mui/material/Divider";
 import Link from "@mui/material/Link";
 import IconButton from "@mui/material/IconButton";
 import TextField from "@mui/material/TextField";
@@ -38,6 +37,7 @@ import {
   useSuspendHospital,
   useReactivateHospital,
   type ApiHospital,
+  type ApiHospitalStatus,
 } from "../api/hospitals";
 import { SuspendDialog } from "./components/SuspendDialog";
 
@@ -51,7 +51,10 @@ const TAB_LABELS = [
   "Audit Log",
 ];
 
-const STATUS_LABELS: Record<string, string> = {
+const STATUS_LABELS: Record<
+  ApiHospitalStatus,
+  keyof typeof HOSPITAL_STATUS_TONE
+> = {
   approved: "Approved",
   pending: "Pending",
   suspended: "Suspended",
@@ -563,7 +566,7 @@ export function HospitalDetailPage() {
     );
   }
 
-  const statusLabel = STATUS_LABELS[hospital.status] ?? hospital.status;
+  const statusLabel = STATUS_LABELS[hospital.status];
   const isSuspended = hospital.status === "suspended";
 
   return (
