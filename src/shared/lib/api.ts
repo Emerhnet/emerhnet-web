@@ -1,15 +1,49 @@
 import axios from "axios";
 import { useAuthStore } from "@/features/auth/store";
 
+let csrfToken: string | null = null;
+export function setCsrfToken(t: string | null) {
+  csrfToken = t;
+}
+export function getCsrfToken() {
+  return csrfToken;
+}
+
 export const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
   withCredentials: true,
-  xsrfCookieName: "XSRF-TOKEN",
-  xsrfHeaderName: "X-XSRF-TOKEN",
   headers: {
     "Content-Type": "application/json",
   },
 });
+
+// Capture CSRF token from response header on every response (server echoes it on all routes).
+api.interceptors.response.use(
+  (res) => {
+    const t = res.headers["x-csrf-token"];
+    if (typeof t === "string" && t.length > 0) csrfToken = t;
+    return res;
+  },
+  (err) => {
+    const t = err?.response?.headers?.["x-csrf-token"];
+    if (typeof t === "string" && t.length > 0) csrfToken = t;
+    return Promise.reject(err);
+  },
+);
+
+// Attach CSRF header on state-changing requests.
+api.interceptors.request.use((config) => {
+  const m = config.method?.toLowerCase();
+  if (m && ["post", "put", "patch", "delete"].includes(m) && csrfToken) {
+    config.headers["X-XSRF-TOKEN"] = csrfToken;
+  }
+  return config;
+});
+
+export async function bootstrapCsrf(): Promise<void> {
+  const { data } = await api.get<{ csrfToken: string }>("/auth/csrf");
+  csrfToken = data.csrfToken;
+}
 
 let refreshInFlight: Promise<void> | null = null;
 
@@ -22,9 +56,6 @@ api.interceptors.response.use(
 
     if (status !== 401 || original?._retried) return Promise.reject(error);
 
-    // Never attempt refresh for auth endpoints themselves.
-    // sign-in/forgot/reset legitimately 401 on bad input and must surface as-is.
-    // me/refresh failures mean the session is gone — clear and bail.
     if (url.includes("/auth/")) {
       if (url.includes("/auth/me") || url.includes("/auth/refresh")) {
         useAuthStore.getState().clear();
