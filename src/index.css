@@ -1,0 +1,29 @@
+@import "tailwindcss";
+
+
+@theme {
+  --color-primary: #0B2545;
+  --color-primary-light: #1E3A5F;
+  --color-primary-tint: #E8EEF5;
+  --color-success: #0F5132;
+  --color-success-tint: #D1E7DD;
+  --color-warning: #8B5A00;
+  --color-warning-tint: #FFF3CD;
+  --color-danger: #842029;
+  --color-danger-tint: #F8D7DA;
+  --color-info: #0B5394;
+  --color-info-tint: #CFE2FF;
+  --color-bg: #FAF7F2;
+  --color-bg-alt: #F2EEE6;
+  --color-border: #DCD7CD;
+
+  --font-sans: "Inter", system-ui, sans-serif;
+  --radius-card: 8px;
+  --radius-chip: 6px;
+  --radius-modal: 12px;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
