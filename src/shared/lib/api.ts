@@ -1,24 +1,14 @@
 import axios from "axios";
 import { useAuthStore } from "@/features/auth/store";
 
-function getCookie(name: string): string | null {
-  const match = document.cookie.match(new RegExp("(^|; )" + name + "=([^;]*)"));
-  return match ? decodeURIComponent(match[2]) : null;
-}
-
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL ?? "/api/v1",
+  baseURL: import.meta.env.VITE_API_BASE_URL,
   withCredentials: true,
-  headers: { "Content-Type": "application/json" },
-});
-
-api.interceptors.request.use((config) => {
-  const method = config.method?.toLowerCase();
-  if (method && ["post", "put", "patch", "delete"].includes(method)) {
-    const csrf = getCookie("XSRF-TOKEN");
-    if (csrf) config.headers["X-XSRF-TOKEN"] = csrf;
-  }
-  return config;
+  xsrfCookieName: "XSRF-TOKEN",
+  xsrfHeaderName: "X-XSRF-TOKEN",
+  headers: {
+    "Content-Type": "application/json",
+  },
 });
 
 let refreshInFlight: Promise<void> | null = null;
