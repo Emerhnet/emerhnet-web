@@ -8,10 +8,6 @@ import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import Avatar from "@mui/material/Avatar";
 import Link from "@mui/material/Link";
-import IconButton from "@mui/material/IconButton";
-import TextField from "@mui/material/TextField";
-import MenuItem from "@mui/material/MenuItem";
-import InputAdornment from "@mui/material/InputAdornment";
 import Alert from "@mui/material/Alert";
 import Skeleton from "@mui/material/Skeleton";
 import Chip from "@mui/material/Chip";
@@ -19,10 +15,7 @@ import Tooltip from "@mui/material/Tooltip";
 import { DataGrid, type GridColDef } from "@mui/x-data-grid";
 import { useSnackbar } from "notistack";
 import BlockIcon from "@mui/icons-material/Block";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
-import SearchIcon from "@mui/icons-material/Search";
 import EditIcon from "@mui/icons-material/Edit";
-import DownloadIcon from "@mui/icons-material/Download";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import PlayCircleIcon from "@mui/icons-material/PlayCircle";
 import DescriptionIcon from "@mui/icons-material/Description";
@@ -293,16 +286,6 @@ function OverviewTab({ hospital }: { hospital: ApiHospital }) {
     </div>
   );
 }
-
-type StubDoctorRow = {
-  id: string;
-  fullName: string;
-  councilReg: string;
-  department: string;
-  specialisation: string;
-  joined: string;
-  status: string;
-};
 
 function DoctorsTabImpl({ hospitalId }: { hospitalId: string }) {
   const { data, isLoading, isError, refetch } = useHospitalDoctors(hospitalId);
