@@ -3,6 +3,9 @@ import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import Typography from "@mui/material/Typography";
 import Link from "@mui/material/Link";
+import Alert from "@mui/material/Alert";
+import Skeleton from "@mui/material/Skeleton";
+import Button from "@mui/material/Button";
 import MedicalServicesIcon from "@mui/icons-material/MedicalServices";
 import HotelIcon from "@mui/icons-material/Hotel";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
@@ -10,7 +13,6 @@ import ApartmentIcon from "@mui/icons-material/Apartment";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import EditNoteIcon from "@mui/icons-material/EditNote";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
-import SettingsIcon from "@mui/icons-material/Settings";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import DirectionsRunIcon from "@mui/icons-material/DirectionsRun";
 import BuildIcon from "@mui/icons-material/Build";
@@ -18,65 +20,30 @@ import CancelIcon from "@mui/icons-material/Cancel";
 import { PageHeader } from "@/shared/components/PageHeader";
 import { KpiCard } from "@/shared/components/KpiCard";
 import { SectionCard } from "@/shared/components/SectionCard";
+import { formatRelative } from "@/shared/lib/datetime";
 import {
-  HOSPITAL_CONTEXT,
-  DOCTORS_BY_DEPARTMENT,
-  DEPARTMENTS_TOTAL,
-  BED_TYPES,
-  AMBULANCE_STATUS,
-} from "../data";
+  useHospitalDashboard,
+  type AmbulanceStatusCounts,
+} from "../api/dashboard";
 
-const AMBULANCE_PILL_COLORS = {
-  Available: {
-    bg: "#D1E7DD",
-    accent: "#0F5132",
-    fg: "#0F5132",
-    Icon: CheckCircleIcon,
-  },
-  "On Duty": {
-    bg: "#CFE2FF",
-    accent: "#0B5394",
-    fg: "#0B5394",
-    Icon: DirectionsRunIcon,
-  },
-  "Under Maintenance": {
-    bg: "#FFF3CD",
-    accent: "#8B5A00",
-    fg: "#8B5A00",
-    Icon: BuildIcon,
-  },
-  "Out of Service": {
-    bg: "#F8D7DA",
-    accent: "#842029",
-    fg: "#842029",
-    Icon: CancelIcon,
-  },
-} as const;
+const AMBULANCE_PILL_COLORS: Record<
+  keyof AmbulanceStatusCounts,
+  { bg: string; accent: string; fg: string; Icon: typeof CheckCircleIcon }
+> = {
+  Available: { bg: "#D1E7DD", accent: "#0F5132", fg: "#0F5132", Icon: CheckCircleIcon },
+  "On Duty": { bg: "#CFE2FF", accent: "#0B5394", fg: "#0B5394", Icon: DirectionsRunIcon },
+  "Under Maintenance": { bg: "#FFF3CD", accent: "#8B5A00", fg: "#8B5A00", Icon: BuildIcon },
+  "Out of Service": { bg: "#F8D7DA", accent: "#842029", fg: "#842029", Icon: CancelIcon },
+};
 
-function DeptBar({
-  name,
-  count,
-  max,
-}: {
-  name: string;
-  count: number;
-  max: number;
-}) {
-  const pct = (count / max) * 100;
+function DeptBar({ name, count, max }: { name: string; count: number; max: number }) {
+  const pct = max === 0 ? 0 : (count / max) * 100;
   return (
     <Box sx={{ display: "flex", alignItems: "center", gap: 2, py: 0.75 }}>
-      <Typography sx={{ fontSize: 14, width: 200, flexShrink: 0 }}>
+      <Typography sx={{ fontSize: 14, width: { xs: 120, sm: 200 }, flexShrink: 0 }}>
         {name}
       </Typography>
-      <Box
-        sx={{
-          flex: 1,
-          height: 8,
-          bgcolor: "#E5E7EB",
-          borderRadius: 999,
-          position: "relative",
-        }}
-      >
+      <Box sx={{ flex: 1, height: 8, bgcolor: "#E5E7EB", borderRadius: 999 }}>
         <Box
           sx={{
             width: `${pct}%`,
@@ -86,26 +53,16 @@ function DeptBar({
           }}
         />
       </Box>
-      <Typography
-        sx={{ fontSize: 14, fontWeight: 600, width: 32, textAlign: "right" }}
-      >
+      <Typography sx={{ fontSize: 14, fontWeight: 600, width: 32, textAlign: "right" }}>
         {count}
       </Typography>
     </Box>
   );
 }
 
-function BedRow({
-  name,
-  total,
-  occupied,
-}: {
-  name: string;
-  total: number;
-  occupied: number;
-}) {
+function BedRow({ name, total, occupied }: { name: string; total: number; occupied: number }) {
   const available = total - occupied;
-  const pct = (occupied / total) * 100;
+  const pct = total === 0 ? 0 : (occupied / total) * 100;
   const tone: "normal" | "warning" | "danger" =
     pct >= 100 ? "danger" : pct >= 85 ? "warning" : "normal";
   const barColor =
@@ -123,22 +80,12 @@ function BedRow({
       >
         <Typography sx={{ fontSize: 14, fontWeight: 500 }}>{name}</Typography>
         <Typography sx={{ fontSize: 13 }}>
-          <Box component="span" sx={{ color: "text.secondary" }}>
-            Total{" "}
-          </Box>
+          <Box component="span" sx={{ color: "text.secondary" }}>Total </Box>
           {total}
-          <Box component="span" sx={{ color: "text.secondary" }}>
-            {" "}
-            · Occupied{" "}
-          </Box>
+          <Box component="span" sx={{ color: "text.secondary" }}> · Occupied </Box>
           {occupied}
-          <Box component="span" sx={{ color: "text.secondary" }}>
-            {" "}
-            · Available{" "}
-          </Box>
-          <Box component="span" sx={{ color: availColor, fontWeight: 600 }}>
-            {available}
-          </Box>
+          <Box component="span" sx={{ color: "text.secondary" }}> · Available </Box>
+          <Box component="span" sx={{ color: availColor, fontWeight: 600 }}>{available}</Box>
         </Typography>
       </Box>
       <Box sx={{ height: 6, bgcolor: "#E5E7EB", borderRadius: 999 }}>
@@ -179,7 +126,7 @@ function QuickActionTile({
       }}
       sx={{
         cursor: "pointer",
-        width: 240,
+        width: { xs: "100%", sm: 240 },
         p: 2.5,
         border: "1px solid",
         borderColor: "divider",
@@ -190,52 +137,71 @@ function QuickActionTile({
       }}
     >
       <Icon sx={{ fontSize: 32, color: "primary.main", mb: 1 }} />
-      <Typography sx={{ fontSize: 16, fontWeight: 600, mb: 0.25 }}>
-        {label}
-      </Typography>
-      <Typography sx={{ fontSize: 12, color: "text.secondary" }}>
-        {description}
-      </Typography>
+      <Typography sx={{ fontSize: 16, fontWeight: 600, mb: 0.25 }}>{label}</Typography>
+      <Typography sx={{ fontSize: 12, color: "text.secondary" }}>{description}</Typography>
     </Box>
   );
 }
 
 export function DashboardPage() {
   const navigate = useNavigate();
-  const maxDept = Math.max(...DOCTORS_BY_DEPARTMENT.map((d) => d.count));
-  const totalAmbulances = Object.values(AMBULANCE_STATUS).reduce(
-    (s, n) => s + n,
-    0,
-  );
+  const { data, isLoading, isError, refetch } = useHospitalDashboard();
+
+  if (isLoading) {
+    return (
+      <>
+        <PageHeader title="Dashboard" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          {[...Array(4)].map((_, i) => <Skeleton key={i} variant="rounded" height={110} />)}
+        </div>
+        <Skeleton variant="rounded" height={300} />
+      </>
+    );
+  }
+  if (isError || !data) {
+    return (
+      <>
+        <PageHeader title="Dashboard" />
+        <Alert
+          severity="error"
+          action={<Button size="small" onClick={() => void refetch()}>Retry</Button>}
+        >
+          Failed to load dashboard.
+        </Alert>
+      </>
+    );
+  }
+
+  const { hospital, kpis, ambulanceStatus, doctorsByDepartment, bedTypes } = data;
+  const maxDept = Math.max(...doctorsByDepartment.map((d) => d.count), 1);
+  const PILL_KEYS: (keyof AmbulanceStatusCounts)[] = [
+    "Available",
+    "On Duty",
+    "Under Maintenance",
+    "Out of Service",
+  ];
 
   return (
     <>
       <PageHeader
-        title={HOSPITAL_CONTEXT.name}
-        subtitle={`NIN ${HOSPITAL_CONTEXT.nin} · Last profile update: ${HOSPITAL_CONTEXT.lastUpdated}`}
+        title={hospital.name || "Dashboard"}
+        subtitle={`NIN ${hospital.nin} · Last profile update: ${formatRelative(hospital.updatedAt)}`}
       />
 
-      <div className="grid grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <KpiCard
           label="Active Doctors"
-          value={87}
+          value={kpis.activeDoctors}
           icon={<MedicalServicesIcon />}
-          change={`Across ${DEPARTMENTS_TOTAL} departments`}
+          change={`Across ${kpis.departmentCount} departments`}
           changeTone="muted"
         />
         <Card sx={{ p: 2.5, position: "relative" }}>
-          <Box
-            sx={{
-              position: "absolute",
-              top: 16,
-              right: 16,
-              color: "primary.main",
-            }}
-          >
+          <Box sx={{ position: "absolute", top: 16, right: 16, color: "primary.main" }}>
             <HotelIcon />
           </Box>
           <Typography sx={{ fontSize: 32, fontWeight: 600, lineHeight: 1.1 }}>
-            240
+            {kpis.totalBeds}
           </Typography>
           <Typography
             sx={{
@@ -250,29 +216,29 @@ export function DashboardPage() {
             Total Beds
           </Typography>
           <Typography sx={{ fontSize: 12, mt: 1 }}>
-            150 occupied ·{" "}
+            {kpis.occupiedBeds} occupied ·{" "}
             <Box component="span" sx={{ color: "#0F5132", fontWeight: 600 }}>
-              90 available
+              {kpis.availableBeds} available
             </Box>
           </Typography>
         </Card>
         <KpiCard
           label="Available Ambulances"
-          value="4 / 6"
+          value={`${kpis.availableAmbulances} / ${kpis.totalAmbulances}`}
           icon={<LocalShippingIcon />}
-          change="2 on duty"
+          change={`${kpis.onDutyAmbulances} on duty`}
           changeTone="muted"
         />
         <KpiCard
           label="Departments"
-          value={DEPARTMENTS_TOTAL}
+          value={kpis.departmentCount}
           icon={<ApartmentIcon />}
-          change="All active"
+          change="Active"
           changeTone="muted"
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-4 mb-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
         <SectionCard
           title="Doctors by Department"
           action={
@@ -287,9 +253,15 @@ export function DashboardPage() {
             </Link>
           }
         >
-          {DOCTORS_BY_DEPARTMENT.map((d) => (
-            <DeptBar key={d.name} name={d.name} count={d.count} max={maxDept} />
-          ))}
+          {doctorsByDepartment.length === 0 ? (
+            <Typography variant="body2" sx={{ color: "text.secondary", py: 2 }}>
+              No doctors yet.
+            </Typography>
+          ) : (
+            doctorsByDepartment.map((d) => (
+              <DeptBar key={d.name} name={d.name} count={d.count} max={maxDept} />
+            ))
+          )}
           <Box sx={{ pt: 1.5, textAlign: "center" }}>
             <Link
               component="button"
@@ -298,13 +270,13 @@ export function DashboardPage() {
               underline="hover"
               sx={{ fontSize: 13, fontWeight: 500 }}
             >
-              Show all 12 →
+              Show all {kpis.departmentCount} →
             </Link>
           </Box>
         </SectionCard>
 
         <SectionCard
-          title="Bed Availability by Type"
+          title="Bed Occupancy"
           action={
             <Link
               component="button"
@@ -317,131 +289,118 @@ export function DashboardPage() {
             </Link>
           }
         >
-          {BED_TYPES.map((b) => (
-            <BedRow key={b.name} {...b} />
-          ))}
+          {bedTypes.length === 0 ? (
+            <Typography variant="body2" sx={{ color: "text.secondary", py: 2 }}>
+              No bed types configured.
+            </Typography>
+          ) : (
+            bedTypes.map((b) => (
+              <BedRow key={b.type} name={b.type} total={b.total} occupied={b.occupied} />
+            ))
+          )}
         </SectionCard>
       </div>
 
-      <Card sx={{ p: 3, mb: 3 }}>
-        <Typography sx={{ fontSize: 16, fontWeight: 600, mb: 2 }}>
-          Ambulance Status
-        </Typography>
-        <div className="grid grid-cols-4 gap-3">
-          {(
-            Object.keys(AMBULANCE_STATUS) as (keyof typeof AMBULANCE_STATUS)[]
-          ).map((label) => {
-            const c = AMBULANCE_PILL_COLORS[label];
-            const count = AMBULANCE_STATUS[label];
-            const empty = count === 0;
-            return (
-              <Box
-                key={label}
-                sx={{
-                  position: "relative",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 1.5,
-                  pl: 2.5,
-                  pr: 2,
-                  py: 1.75,
-                  bgcolor: "background.paper",
-                  border: "1px solid",
-                  borderColor: "divider",
-                  borderRadius: 1.5,
-                  opacity: empty ? 0.65 : 1,
-                  transition: "box-shadow 120ms",
-                  "&:hover": { boxShadow: "0 2px 6px rgba(15,23,42,0.06)" },
-                  "&::before": {
-                    content: '""',
-                    position: "absolute",
-                    left: 0,
-                    top: 8,
-                    bottom: 8,
-                    width: 3,
-                    borderRadius: 999,
-                    bgcolor: c.accent,
-                  },
-                }}
-              >
-                <Box
+      <Box sx={{ mb: 3 }}>
+        <SectionCard title="Ambulance Fleet Status">
+          <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
+            {PILL_KEYS.map((s) => {
+              const t = AMBULANCE_PILL_COLORS[s];
+              const count = ambulanceStatus[s];
+              const dim = count === 0;
+              const Icon = t.Icon;
+              return (
+                <Card
+                  key={s}
                   sx={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: "50%",
-                    bgcolor: c.bg,
+                    flex: 1,
+                    minWidth: 200,
+                    position: "relative",
                     display: "flex",
                     alignItems: "center",
-                    justifyContent: "center",
-                    flexShrink: 0,
+                    gap: 2,
+                    p: 2,
+                    pl: 2.5,
+                    overflow: "hidden",
+                    "&::before": {
+                      content: '""',
+                      position: "absolute",
+                      left: 0,
+                      top: 8,
+                      bottom: 8,
+                      width: 4,
+                      borderRadius: 999,
+                      bgcolor: t.accent,
+                    },
                   }}
                 >
-                  <c.Icon sx={{ fontSize: 18, color: c.fg }} />
-                </Box>
-                <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Typography
+                  <Box
                     sx={{
-                      fontSize: 11,
-                      fontWeight: 600,
-                      color: "text.secondary",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.06em",
+                      width: 40,
+                      height: 40,
+                      borderRadius: 1,
+                      bgcolor: t.bg,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: 0,
                     }}
                   >
-                    {label}
-                  </Typography>
-                  <Typography
-                    sx={{
-                      fontSize: 28,
-                      fontWeight: 600,
-                      color: empty ? "text.secondary" : c.fg,
-                      lineHeight: 1.1,
-                      mt: 0.25,
-                    }}
-                  >
-                    {count}
-                  </Typography>
-                </Box>
-              </Box>
-            );
-          })}
-        </div>
-        <Typography sx={{ fontSize: 12, color: "text.secondary", mt: 1.5 }}>
-          {totalAmbulances} ambulances total. Last status update: 1h ago.
-        </Typography>
-      </Card>
+                    <Icon sx={{ color: t.fg, fontSize: 22 }} />
+                  </Box>
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Typography
+                      sx={{
+                        fontSize: 11,
+                        fontWeight: 600,
+                        color: "text.secondary",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.06em",
+                      }}
+                    >
+                      {s}
+                    </Typography>
+                    <Typography
+                      sx={{
+                        fontSize: 28,
+                        fontWeight: 600,
+                        lineHeight: 1.1,
+                        color: dim ? "text.disabled" : t.fg,
+                        mt: 0.25,
+                      }}
+                    >
+                      {String(count).padStart(2, "0")}
+                    </Typography>
+                  </Box>
+                </Card>
+              );
+            })}
+          </Box>
+        </SectionCard>
+      </Box>
 
-      <Card sx={{ p: 3 }}>
-        <Typography sx={{ fontSize: 16, fontWeight: 600, mb: 2 }}>
-          Quick actions
-        </Typography>
+      <SectionCard title="Quick actions">
         <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
           <QuickActionTile
             Icon={PersonAddIcon}
-            label="Add Doctor"
-            description="Create a new doctor record."
+            label="Add a doctor"
+            description="Register a new practitioner."
             onClick={() => navigate("/hospital/doctors")}
           />
           <QuickActionTile
             Icon={EditNoteIcon}
-            label="Update Bed Counts"
-            description="Adjust occupied counts for any bed type."
+            label="Update bed counts"
+            description="Set total and occupied per bed type."
             onClick={() => navigate("/hospital/beds")}
           />
           <QuickActionTile
             Icon={AddCircleIcon}
-            label="Register Ambulance"
-            description="Add a new ambulance unit to your fleet."
+            label="Register ambulance"
+            description="Add a new vehicle to the fleet."
             onClick={() => navigate("/hospital/ambulances")}
           />
-          <QuickActionTile
-            Icon={SettingsIcon}
-            label="Edit Hospital Profile"
-            description="Update contact, address, or visiting hours."
-            onClick={() => navigate("/hospital/profile")}
-          />
         </Box>
-      </Card>
+      </SectionCard>
     </>
   );
 }

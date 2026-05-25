@@ -38,7 +38,7 @@ function tone(action: string): StatusTone {
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <Box
-      sx={{ display: "grid", gridTemplateColumns: "120px 1fr", gap: 2, py: 1 }}
+      sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "120px 1fr" }, gap: { xs: 0.25, sm: 2 }, py: 1 }}
     >
       <Typography
         variant="caption"
@@ -111,7 +111,7 @@ export function AuditDetailDrawer({
       anchor="right"
       open={open}
       onClose={onClose}
-      PaperProps={{ sx: { width: 520, p: 0 } }}
+      PaperProps={{ sx: { width: { xs: "100%", sm: 520 }, maxWidth: "100%", p: 0 } }}
     >
       {entry && (
         <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
@@ -290,7 +290,7 @@ export function AuditDetailDrawer({
               Change details
             </Typography>
             <Box
-              sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1.5 }}
+              sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 1.5 }}
             >
               <Box>
                 <Typography

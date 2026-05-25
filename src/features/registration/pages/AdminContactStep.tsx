@@ -1,4 +1,4 @@
-import { Controller, useForm } from "react-hook-form";
+﻿import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router-dom";
 import Box from "@mui/material/Box";
@@ -105,7 +105,7 @@ export function AdminContactStep() {
           </Typography>
         </Box>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <FieldLabel htmlFor="hospitalEmail" required>
               Hospital email
@@ -187,7 +187,7 @@ export function AdminContactStep() {
           )}
         />
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <FieldLabel htmlFor="adminEmail" required>
               Admin email

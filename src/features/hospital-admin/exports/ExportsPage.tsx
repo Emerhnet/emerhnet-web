@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import Typography from "@mui/material/Typography";
@@ -94,7 +94,7 @@ export function ExportsPage() {
         subtitle="Download your hospital's data as CSV files."
       />
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         {DATASETS.map((d) => {
           const Icon = d.icon;
           const isBusy = busy === d.key;

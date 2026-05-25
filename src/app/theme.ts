@@ -52,9 +52,22 @@ export const theme = createTheme({
     },
   },
   typography: {
-    fontFamily: '"Inter", system-ui, sans-serif',
-    h1: { fontSize: "28px", fontWeight: 600, lineHeight: 1.25 },
-    h2: { fontSize: "20px", fontWeight: 600, lineHeight: 1.3 },
+    fontFamily:
+      '"IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif',
+    h1: {
+      fontFamily: '"IBM Plex Serif", Georgia, serif',
+      fontSize: "28px",
+      fontWeight: 600,
+      lineHeight: 1.25,
+      letterSpacing: "-0.01em",
+    },
+    h2: {
+      fontFamily: '"IBM Plex Serif", Georgia, serif',
+      fontSize: "20px",
+      fontWeight: 600,
+      lineHeight: 1.3,
+      letterSpacing: "-0.005em",
+    },
     h3: { fontSize: "16px", fontWeight: 600, lineHeight: 1.4 },
     body1: { fontSize: "14px", lineHeight: 1.5 },
     body2: { fontSize: "14px", lineHeight: 1.5 },

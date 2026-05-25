@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
@@ -36,7 +36,7 @@ export function ApproveDialog({
       onClose={onCancel}
       maxWidth="xs"
       fullWidth
-      PaperProps={{ sx: { width: 480 } }}
+      PaperProps={{ sx: { width: "100%", maxWidth: 480, m: { xs: 2, sm: 4 } } }}
     >
       <DialogTitle sx={{ fontSize: 18, fontWeight: 600 }}>
         Approve {hospitalName}?

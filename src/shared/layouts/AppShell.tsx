@@ -14,11 +14,18 @@ import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import Divider from "@mui/material/Divider";
 import ListItemIcon from "@mui/material/ListItemIcon";
+import Drawer from "@mui/material/Drawer";
+import Dialog from "@mui/material/Dialog";
+import DialogContent from "@mui/material/DialogContent";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import { useTheme } from "@mui/material/styles";
 import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import LogoutIcon from "@mui/icons-material/Logout";
 import PersonIcon from "@mui/icons-material/Person";
 import SearchIcon from "@mui/icons-material/Search";
+import MenuIcon from "@mui/icons-material/Menu";
+import CloseIcon from "@mui/icons-material/Close";
 import InputBase from "@mui/material/InputBase";
 import Chip from "@mui/material/Chip";
 import { useAuthStore } from "@/features/auth/store";
@@ -33,10 +40,20 @@ import {
 const SIDEBAR_WIDTH = 264;
 const TOPBAR_HEIGHT = 64;
 
-function SidebarItem({ item }: { item: Extract<NavItem, { kind: "link" }> }) {
+function SidebarItem({
+  item,
+  onNavigate,
+}: {
+  item: Extract<NavItem, { kind: "link" }>;
+  onNavigate?: () => void;
+}) {
   const Icon = item.icon;
   return (
-    <NavLink to={item.to} style={{ textDecoration: "none" }}>
+    <NavLink
+      to={item.to}
+      style={{ textDecoration: "none" }}
+      onClick={onNavigate}
+    >
       {({ isActive }) => (
         <Box
           sx={{
@@ -92,9 +109,14 @@ function SidebarItem({ item }: { item: Extract<NavItem, { kind: "link" }> }) {
 
 export function AppShell() {
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isDesktop = useMediaQuery(theme.breakpoints.up("md"));
+  const isSmUp = useMediaQuery(theme.breakpoints.up("sm"));
   const user = useAuthStore((s) => s.user);
   const signOutMutation = useSignOut();
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
 
   const nav =
     user?.role === "superAdmin" ? SUPER_ADMIN_NAV : HOSPITAL_ADMIN_NAV;
@@ -113,55 +135,96 @@ export function AppShell() {
     navigate("/sign-in");
   };
 
-  return (
-    <Box sx={{ minHeight: "100vh", bgcolor: "#FAF7F2" }}>
+  const sidebarContent = (
+    <>
       <Box
-        component="aside"
         sx={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          bottom: 0,
-          width: SIDEBAR_WIDTH,
-          bgcolor: "background.paper",
-          borderRight: "1px solid",
-          borderColor: "divider",
+          height: TOPBAR_HEIGHT,
           display: "flex",
-          flexDirection: "column",
-          zIndex: 2,
+          alignItems: "center",
+          justifyContent: "space-between",
+          px: 3,
+          borderBottom: "1px solid",
+          borderColor: "divider",
         }}
       >
+        <RouterLink
+          to="/"
+          style={{ textDecoration: "none" }}
+          onClick={() => setDrawerOpen(false)}
+        >
+          <EmerhnetWordmark size={40} />
+        </RouterLink>
+        {!isDesktop && (
+          <IconButton
+            aria-label="Close navigation"
+            onClick={() => setDrawerOpen(false)}
+            size="small"
+          >
+            <CloseIcon />
+          </IconButton>
+        )}
+      </Box>
+      <Box sx={{ py: 2, flex: 1, overflowY: "auto" }}>
+        {nav.map((item, i) =>
+          item.kind === "divider" ? (
+            <Divider key={`div-${i}`} sx={{ my: 1.5, mx: 2 }} />
+          ) : (
+            <SidebarItem
+              key={item.to}
+              item={item}
+              onNavigate={() => !isDesktop && setDrawerOpen(false)}
+            />
+          ),
+        )}
+      </Box>
+    </>
+  );
+
+  return (
+    <Box sx={{ minHeight: "100vh", bgcolor: "#FAF7F2" }}>
+      {isDesktop ? (
         <Box
+          component="aside"
           sx={{
-            height: TOPBAR_HEIGHT,
-            display: "flex",
-            alignItems: "center",
-            px: 3,
-            borderBottom: "1px solid",
+            position: "fixed",
+            top: 0,
+            left: 0,
+            bottom: 0,
+            width: SIDEBAR_WIDTH,
+            bgcolor: "background.paper",
+            borderRight: "1px solid",
             borderColor: "divider",
+            display: "flex",
+            flexDirection: "column",
+            zIndex: 2,
           }}
         >
-          <RouterLink to="/" style={{ textDecoration: "none" }}>
-            <EmerhnetWordmark size={20} />
-          </RouterLink>
+          {sidebarContent}
         </Box>
-        <Box sx={{ py: 2, flex: 1, overflowY: "auto" }}>
-          {nav.map((item, i) =>
-            item.kind === "divider" ? (
-              <Divider key={`div-${i}`} sx={{ my: 1.5, mx: 2 }} />
-            ) : (
-              <SidebarItem key={item.to} item={item} />
-            ),
-          )}
-        </Box>
-      </Box>
+      ) : (
+        <Drawer
+          open={drawerOpen}
+          onClose={() => setDrawerOpen(false)}
+          ModalProps={{ keepMounted: true }}
+          PaperProps={{
+            sx: {
+              width: SIDEBAR_WIDTH,
+              display: "flex",
+              flexDirection: "column",
+            },
+          }}
+        >
+          {sidebarContent}
+        </Drawer>
+      )}
 
       <Box
         component="header"
         sx={{
           position: "fixed",
           top: 0,
-          left: SIDEBAR_WIDTH,
+          left: { xs: 0, md: `${SIDEBAR_WIDTH}px` },
           right: 0,
           height: TOPBAR_HEIGHT,
           bgcolor: "background.paper",
@@ -169,12 +232,22 @@ export function AppShell() {
           borderColor: "divider",
           display: "flex",
           alignItems: "center",
-          gap: 1.5,
-          px: 3,
+          gap: { xs: 0.5, sm: 1.5 },
+          px: { xs: 1.5, sm: 2, md: 3 },
           zIndex: 1,
         }}
       >
-        {user?.role === "hospitalAdmin" && (
+        {!isDesktop && (
+          <IconButton
+            aria-label="Open navigation"
+            onClick={() => setDrawerOpen(true)}
+            edge="start"
+          >
+            <MenuIcon />
+          </IconButton>
+        )}
+
+        {user?.role === "hospitalAdmin" && isSmUp && (
           <Chip
             label={
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
@@ -186,10 +259,25 @@ export function AppShell() {
                     bgcolor: "#0F5132",
                   }}
                 />
-                <Box component="span" sx={{ fontWeight: 600 }}>
+                <Box
+                  component="span"
+                  sx={{
+                    fontWeight: 600,
+                    maxWidth: { sm: 140, md: "none" },
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
                   General Hospital, Pune
                 </Box>
-                <Box component="span" sx={{ color: "text.secondary" }}>
+                <Box
+                  component="span"
+                  sx={{
+                    color: "text.secondary",
+                    display: { xs: "none", md: "inline" },
+                  }}
+                >
                   · Approved
                 </Box>
               </Box>
@@ -207,88 +295,104 @@ export function AppShell() {
         )}
         <Box sx={{ flex: 1 }} />
 
-        <IconButton aria-label="Notifications">
+        {isDesktop ? (
+          <Box
+            sx={{
+              width: { md: 240, lg: 320 },
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+              bgcolor: "#F2EEE6",
+              border: "1px solid",
+              borderColor: "divider",
+              borderRadius: 1,
+              px: 1.5,
+              height: 38,
+              "&:focus-within": {
+                borderColor: "primary.main",
+                bgcolor: "background.paper",
+              },
+            }}
+          >
+            <SearchIcon sx={{ fontSize: 18, color: "text.secondary" }} />
+            <InputBase
+              placeholder="Search hospitals, doctors…"
+              sx={{ flex: 1, fontSize: 14 }}
+              inputProps={{ "aria-label": "Universal search" }}
+            />
+            <Typography
+              component="kbd"
+              sx={{
+                fontSize: 11,
+                color: "text.secondary",
+                border: "1px solid",
+                borderColor: "divider",
+                borderRadius: 0.75,
+                px: 0.75,
+                py: 0.125,
+                bgcolor: "background.paper",
+                fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+              }}
+            >
+              ⌘K
+            </Typography>
+          </Box>
+        ) : (
+          <IconButton
+            aria-label="Search"
+            onClick={() => setSearchOpen(true)}
+            size="small"
+          >
+            <SearchIcon />
+          </IconButton>
+        )}
+
+        <IconButton aria-label="Notifications" size={isDesktop ? "medium" : "small"}>
           <Badge badgeContent={3} color="error">
             <NotificationsNoneIcon />
           </Badge>
         </IconButton>
 
-        <Box
-          sx={{
-            width: 320,
-            display: "flex",
-            alignItems: "center",
-            gap: 1,
-            bgcolor: "#F2EEE6",
-            border: "1px solid",
-            borderColor: "divider",
-            borderRadius: 1,
-            px: 1.5,
-            height: 38,
-            "&:focus-within": {
-              borderColor: "primary.main",
-              bgcolor: "background.paper",
-            },
-          }}
-        >
-          <SearchIcon sx={{ fontSize: 18, color: "text.secondary" }} />
-          <InputBase
-            placeholder="Search hospitals, doctors…"
-            sx={{ flex: 1, fontSize: 14 }}
-            inputProps={{ "aria-label": "Universal search" }}
-          />
-          <Typography
-            component="kbd"
+        {isDesktop && (
+          <Chip
+            label={roleLabel}
+            size="small"
             sx={{
+              bgcolor: "#E8EEF5",
+              color: "primary.main",
+              fontWeight: 600,
               fontSize: 11,
-              color: "text.secondary",
-              border: "1px solid",
-              borderColor: "divider",
-              borderRadius: 0.75,
-              px: 0.75,
-              py: 0.125,
-              bgcolor: "background.paper",
-              fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+              letterSpacing: "0.04em",
+              textTransform: "uppercase",
+              borderRadius: 1,
+              height: 22,
             }}
-          >
-            ⌘K
+          />
+        )}
+        {isDesktop && (
+          <Typography sx={{ fontSize: 13, fontWeight: 500 }}>
+            {user?.fullName ?? "Guest"}
           </Typography>
-        </Box>
-
-        <Chip
-          label={roleLabel}
-          size="small"
-          sx={{
-            bgcolor: "#E8EEF5",
-            color: "primary.main",
-            fontWeight: 600,
-            fontSize: 11,
-            letterSpacing: "0.04em",
-            textTransform: "uppercase",
-            borderRadius: 1,
-            height: 22,
-          }}
-        />
-        <Typography sx={{ fontSize: 13, fontWeight: 500 }}>
-          {user?.fullName ?? "Guest"}
-        </Typography>
+        )}
         <IconButton
           onClick={(e) => setMenuAnchor(e.currentTarget)}
           sx={{ display: "flex", alignItems: "center", gap: 0.5, p: 0.5 }}
         >
           <Avatar
             sx={{
-              width: 36,
-              height: 36,
+              width: { xs: 32, md: 36 },
+              height: { xs: 32, md: 36 },
               bgcolor: "primary.main",
               fontSize: 14,
             }}
           >
             {initials ?? "?"}
           </Avatar>
-          <KeyboardArrowDownIcon
-            sx={{ fontSize: 18, color: "text.secondary" }}
-          />
+          {isDesktop && (
+            <KeyboardArrowDownIcon
+              sx={{ fontSize: 18, color: "text.secondary" }}
+            />
+          )}
         </IconButton>
         <Menu
           anchorEl={menuAnchor}
@@ -311,15 +415,55 @@ export function AppShell() {
         </Menu>
       </Box>
 
+      <Dialog
+        open={searchOpen}
+        onClose={() => setSearchOpen(false)}
+        fullWidth
+        maxWidth="sm"
+        sx={{ "& .MuiDialog-paper": { mt: 6, alignSelf: "flex-start" } }}
+      >
+        <DialogContent sx={{ p: 1.5 }}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+              bgcolor: "#F2EEE6",
+              border: "1px solid",
+              borderColor: "divider",
+              borderRadius: 1,
+              px: 1.5,
+              height: 42,
+            }}
+          >
+            <SearchIcon sx={{ fontSize: 18, color: "text.secondary" }} />
+            <InputBase
+              autoFocus
+              placeholder="Search hospitals, doctors…"
+              sx={{ flex: 1, fontSize: 14 }}
+              inputProps={{ "aria-label": "Universal search" }}
+            />
+          </Box>
+        </DialogContent>
+      </Dialog>
+
       <Box
         component="main"
         sx={{
-          ml: `${SIDEBAR_WIDTH}px`,
+          ml: { xs: 0, md: `${SIDEBAR_WIDTH}px` },
           pt: `${TOPBAR_HEIGHT}px`,
           minHeight: "100vh",
         }}
       >
-        <Box sx={{ maxWidth: 1280, mx: "auto", px: 4, pt: 4, pb: 6 }}>
+        <Box
+          sx={{
+            maxWidth: 1280,
+            mx: "auto",
+            px: { xs: 2, sm: 3, md: 4 },
+            pt: { xs: 2, sm: 3, md: 4 },
+            pb: { xs: 4, md: 6 },
+          }}
+        >
           <Outlet />
         </Box>
       </Box>

@@ -180,7 +180,7 @@ export function PendingRegistrationsPage() {
           onChange={(e) => setParam("q", e.target.value || null)}
           placeholder="Search by hospital name, NIN, or city"
           size="small"
-          sx={{ width: 300 }}
+          sx={{ width: { xs: "100%", sm: 300 } }}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
@@ -195,7 +195,7 @@ export function PendingRegistrationsPage() {
           onChange={(d) =>
             setParam("from", d ? d.toISOString().slice(0, 10) : null)
           }
-          slotProps={{ textField: { size: "small", sx: { width: 160 } } }}
+          slotProps={{ textField: { size: "small", sx: { width: { xs: "calc(50% - 8px)", sm: 160 } } } }}
         />
         <DatePicker
           label="To"
@@ -203,7 +203,7 @@ export function PendingRegistrationsPage() {
           onChange={(d) =>
             setParam("to", d ? d.toISOString().slice(0, 10) : null)
           }
-          slotProps={{ textField: { size: "small", sx: { width: 160 } } }}
+          slotProps={{ textField: { size: "small", sx: { width: { xs: "calc(50% - 8px)", sm: 160 } } } }}
         />
         <Box sx={{ flex: 1 }} />
         {hasFilters && (

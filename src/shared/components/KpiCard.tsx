@@ -24,13 +24,13 @@ export function KpiCard({
         : "#8C8C8C";
 
   return (
-    <Card sx={{ p: 2.5, position: "relative" }}>
+    <Card sx={{ p: { xs: 2, sm: 2.5 }, position: "relative", height: "100%" }}>
       <Box
         sx={{ position: "absolute", top: 16, right: 16, color: "primary.main" }}
       >
         {icon}
       </Box>
-      <Typography sx={{ fontSize: 32, fontWeight: 600, lineHeight: 1.1 }}>
+      <Typography sx={{ fontSize: { xs: 26, sm: 32 }, fontWeight: 600, lineHeight: 1.1 }}>
         {value}
       </Typography>
       <Typography

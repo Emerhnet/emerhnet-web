@@ -268,7 +268,7 @@ export function AuditLogPage() {
             onChange={(e) => setParam("q", e.target.value || null)}
             placeholder="Search action, entity type, or id"
             size="small"
-            sx={{ width: 280 }}
+            sx={{ width: { xs: "100%", sm: 280 } }}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
@@ -296,7 +296,7 @@ export function AuditLogPage() {
               })
             }
             renderInput={(p) => <TextField {...p} label="Action type" />}
-            sx={{ width: 360 }}
+            sx={{ width: { xs: "100%", sm: 360 } }}
           />
           <DatePicker
             label="From"
@@ -304,7 +304,7 @@ export function AuditLogPage() {
             onChange={(d) =>
               setParam("from", d ? d.toISOString().slice(0, 10) : null)
             }
-            slotProps={{ textField: { size: "small", sx: { width: 160 } } }}
+            slotProps={{ textField: { size: "small", sx: { width: { xs: "calc(50% - 8px)", sm: 160 } } } }}
           />
           <DatePicker
             label="To"
@@ -312,7 +312,7 @@ export function AuditLogPage() {
             onChange={(d) =>
               setParam("to", d ? d.toISOString().slice(0, 10) : null)
             }
-            slotProps={{ textField: { size: "small", sx: { width: 160 } } }}
+            slotProps={{ textField: { size: "small", sx: { width: { xs: "calc(50% - 8px)", sm: 160 } } } }}
           />
         </Box>
         <Accordion
@@ -342,7 +342,7 @@ export function AuditLogPage() {
               label="IP address"
               value={ipF}
               onChange={(e) => setParam("ip", e.target.value || null)}
-              sx={{ width: 180 }}
+              sx={{ width: { xs: "100%", sm: 180 } }}
             />
           </AccordionDetails>
         </Accordion>

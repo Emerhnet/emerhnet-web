@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
@@ -42,7 +42,7 @@ export function ConfigureBedTypeDialog({
       onClose={onCancel}
       maxWidth="xs"
       fullWidth
-      PaperProps={{ sx: { width: 480 } }}
+      PaperProps={{ sx: { width: "100%", maxWidth: 480, m: { xs: 2, sm: 4 } } }}
     >
       <DialogTitle sx={{ pb: 1 }}>
         <Typography sx={{ fontSize: 18, fontWeight: 600 }}>
@@ -82,7 +82,7 @@ export function ConfigureBedTypeDialog({
             sx={{ mb: 2 }}
           />
         )}
-        <div className="grid grid-cols-2 gap-3 mb-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-2">
           <TextField
             label="Total capacity"
             required

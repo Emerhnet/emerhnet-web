@@ -1,6 +1,27 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/shared/lib/api";
 
+export type DutyStatus = "active" | "on_leave" | "off_duty";
+export type DayKey = "Mon" | "Tue" | "Wed" | "Thu" | "Fri" | "Sat" | "Sun";
+
+export type ScheduleSlot = { from: string; to: string };
+export type DaySchedule = { off: boolean; slots: ScheduleSlot[] };
+export type ConsultationSchedule = Record<DayKey, DaySchedule>;
+
+export const DAYS: DayKey[] = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+export function emptySchedule(): ConsultationSchedule {
+  return {
+    Mon: { off: false, slots: [{ from: "09:00", to: "13:00" }] },
+    Tue: { off: false, slots: [{ from: "09:00", to: "13:00" }] },
+    Wed: { off: false, slots: [{ from: "09:00", to: "13:00" }] },
+    Thu: { off: false, slots: [{ from: "09:00", to: "13:00" }] },
+    Fri: { off: false, slots: [{ from: "09:00", to: "13:00" }] },
+    Sat: { off: false, slots: [{ from: "09:00", to: "13:00" }] },
+    Sun: { off: true, slots: [] },
+  };
+}
+
 export type ApiDoctor = {
   id: string;
   hospitalId: string;
@@ -15,6 +36,11 @@ export type ApiDoctor = {
   gender: "Male" | "Female" | "Other" | "Prefer not to say";
   dob: string | null;
   joinedAt: string;
+  opdRoom: string;
+  photoS3Key: string | null;
+  photoUrl: string | null;
+  dutyStatus: DutyStatus;
+  consultationSchedule: ConsultationSchedule | null;
   deactivatedAt: string | null;
   createdAt: string;
   updatedAt: string;
@@ -47,6 +73,10 @@ export type CreateDoctorInput = {
   gender: ApiDoctor["gender"];
   dob?: string;
   joinedAt: string;
+  opdRoom?: string;
+  photoS3Key?: string | null;
+  dutyStatus?: DutyStatus;
+  consultationSchedule?: ConsultationSchedule | null;
 };
 
 export type UpdateDoctorInput = Partial<CreateDoctorInput>;
@@ -103,6 +133,25 @@ export function useUpdateDoctor() {
       input: UpdateDoctorInput;
     }) => {
       const { data } = await api.patch<ApiDoctor>(`/doctors/${id}`, input);
+      return data;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: key }),
+  });
+}
+
+export function useSetDutyStatus() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      id,
+      dutyStatus,
+    }: {
+      id: string;
+      dutyStatus: DutyStatus;
+    }) => {
+      const { data } = await api.post<ApiDoctor>(`/doctors/${id}/duty-status`, {
+        dutyStatus,
+      });
       return data;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: key }),

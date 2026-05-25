@@ -7,6 +7,9 @@ import TableBody from "@mui/material/TableBody";
 import TableRow from "@mui/material/TableRow";
 import TableCell from "@mui/material/TableCell";
 import Divider from "@mui/material/Divider";
+import Alert from "@mui/material/Alert";
+import Skeleton from "@mui/material/Skeleton";
+import Button from "@mui/material/Button";
 import { Link as RouterLink } from "react-router-dom";
 import PendingActionsIcon from "@mui/icons-material/PendingActions";
 import DomainIcon from "@mui/icons-material/Domain";
@@ -16,6 +19,8 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
 import MailOutlineIcon from "@mui/icons-material/MailOutline";
 import PauseCircleIcon from "@mui/icons-material/PauseCircle";
+import EditNoteIcon from "@mui/icons-material/EditNote";
+import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import {
   PieChart,
   Pie,
@@ -33,136 +38,20 @@ import { Breadcrumbs } from "@/shared/components/Breadcrumbs";
 import { KpiCard } from "@/shared/components/KpiCard";
 import { SectionCard } from "@/shared/components/SectionCard";
 import { StatusChip, SOURCE_TONE } from "@/shared/components/StatusChip";
+import { formatRelative } from "@/shared/lib/datetime";
+import { useSuperAdminDashboard } from "../api/dashboard";
 
-const KPIS = [
-  {
-    label: "Pending Registrations",
-    value: 12,
-    icon: PendingActionsIcon,
-    change: "+3 this week",
-  },
-  {
-    label: "Approved Hospitals",
-    value: 147,
-    icon: DomainIcon,
-    change: "+5 this month",
-  },
-  {
-    label: "Total Doctors",
-    value: "2,341",
-    icon: MedicalServicesIcon,
-    change: "+89 this month",
-  },
-  {
-    label: "Total Ambulances",
-    value: 489,
-    icon: LocalShippingIcon,
-    change: "+12 this month",
-  },
-];
+function activityIconFor(action: string) {
+  if (action.endsWith(".approved")) return { Icon: CheckCircleIcon, color: "#0F5132", bg: "#D1E7DD" };
+  if (action.endsWith(".rejected")) return { Icon: CancelIcon, color: "#842029", bg: "#F8D7DA" };
+  if (action.endsWith(".suspended")) return { Icon: PauseCircleIcon, color: "#8B5A00", bg: "#FFF3CD" };
+  if (action.startsWith("invitation.")) return { Icon: MailOutlineIcon, color: "#0B5394", bg: "#CFE2FF" };
+  if (action.endsWith(".created") || action.endsWith(".updated")) return { Icon: EditNoteIcon, color: "#0B5394", bg: "#CFE2FF" };
+  return { Icon: HelpOutlineIcon, color: "#595959", bg: "#F2EEE6" };
+}
 
-const QUEUE = [
-  {
-    name: "District Hospital Nashik",
-    city: "Nashik",
-    submitted: "2h ago",
-    source: "Self" as const,
-  },
-  {
-    name: "Civil Hospital Aurangabad",
-    city: "Aurangabad",
-    submitted: "5h ago",
-    source: "Invited" as const,
-  },
-  {
-    name: "Sub-District Hospital Solapur",
-    city: "Solapur",
-    submitted: "1d ago",
-    source: "Self" as const,
-  },
-  {
-    name: "Government Medical College Kolhapur",
-    city: "Kolhapur",
-    submitted: "2d ago",
-    source: "Invited" as const,
-  },
-  {
-    name: "Rural Hospital Sangli",
-    city: "Sangli",
-    submitted: "3d ago",
-    source: "Self" as const,
-  },
-];
-
-type ActivityKind = "approved" | "rejected" | "invitation" | "suspended";
-
-const ACTIVITY: {
-  kind: ActivityKind;
-  text: string;
-  when: string;
-  actor: string;
-}[] = [
-  {
-    kind: "approved",
-    text: "Approved General Hospital, Pune",
-    when: "2h ago",
-    actor: "Tushar D.",
-  },
-  {
-    kind: "invitation",
-    text: "Invitation sent to Civil Hospital, Latur",
-    when: "4h ago",
-    actor: "Tushar D.",
-  },
-  {
-    kind: "rejected",
-    text: "Rejected ABC Clinic, Mumbai",
-    when: "1d ago",
-    actor: "Priya M.",
-  },
-  {
-    kind: "suspended",
-    text: "Suspended XYZ Hospital, Nagpur",
-    when: "2d ago",
-    actor: "Tushar D.",
-  },
-  {
-    kind: "approved",
-    text: "Approved District Hospital, Satara",
-    when: "2d ago",
-    actor: "Priya M.",
-  },
-  {
-    kind: "invitation",
-    text: "Invitation sent to Government Medical College, Sangli",
-    when: "3d ago",
-    actor: "Tushar D.",
-  },
-];
-
-const STATUS_PIE = [
-  { name: "Approved", value: 147, color: "#0F5132" },
-  { name: "Pending", value: 12, color: "#8B5A00" },
-  { name: "Suspended", value: 3, color: "#842029" },
-  { name: "Rejected", value: 2, color: "#842029" },
-];
-const STATUS_TOTAL = STATUS_PIE.reduce((s, x) => s + x.value, 0);
-
-const REJECTIONS = [
-  { week: "Wk 1", count: 1 },
-  { week: "Wk 2", count: 3 },
-  { week: "Wk 3", count: 0 },
-  { week: "Wk 4", count: 2 },
-];
-
-function ActivityIcon({ kind }: { kind: ActivityKind }) {
-  const map = {
-    approved: { Icon: CheckCircleIcon, color: "#0F5132", bg: "#D1E7DD" },
-    rejected: { Icon: CancelIcon, color: "#842029", bg: "#F8D7DA" },
-    invitation: { Icon: MailOutlineIcon, color: "#0B5394", bg: "#CFE2FF" },
-    suspended: { Icon: PauseCircleIcon, color: "#8B5A00", bg: "#FFF3CD" },
-  } as const;
-  const { Icon, color, bg } = map[kind];
+function ActivityIcon({ action }: { action: string }) {
+  const { Icon, color, bg } = activityIconFor(action);
   return (
     <Box
       sx={{
@@ -182,26 +71,75 @@ function ActivityIcon({ kind }: { kind: ActivityKind }) {
 }
 
 export function DashboardPage() {
+  const { data, isLoading, isError, refetch } = useSuperAdminDashboard();
+
+  if (isLoading) {
+    return (
+      <>
+        <Breadcrumbs items={[{ label: "Home" }]} />
+        <PageHeader title="Dashboard" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          {[...Array(4)].map((_, i) => (
+            <Skeleton key={i} variant="rounded" height={110} />
+          ))}
+        </div>
+        <Skeleton variant="rounded" height={300} />
+      </>
+    );
+  }
+  if (isError || !data) {
+    return (
+      <>
+        <Breadcrumbs items={[{ label: "Home" }]} />
+        <PageHeader title="Dashboard" />
+        <Alert
+          severity="error"
+          action={<Button size="small" onClick={() => void refetch()}>Retry</Button>}
+        >
+          Failed to load dashboard.
+        </Alert>
+      </>
+    );
+  }
+
+  const statusPie = [
+    { name: "Approved", value: data.statusBreakdown.approved, color: "#0F5132" },
+    { name: "Pending", value: data.statusBreakdown.pending, color: "#8B5A00" },
+    { name: "Suspended", value: data.statusBreakdown.suspended, color: "#842029" },
+    { name: "Rejected", value: data.statusBreakdown.rejected, color: "#595959" },
+  ];
+  const statusTotal = statusPie.reduce((s, x) => s + x.value, 0);
+
   return (
     <>
       <Breadcrumbs items={[{ label: "Home" }]} />
       <PageHeader title="Dashboard" />
 
-      <div className="grid grid-cols-4 gap-4 mb-6">
-        {KPIS.map((k) => (
-          <KpiCard
-            key={k.label}
-            label={k.label}
-            value={k.value}
-            icon={<k.icon sx={{ fontSize: 24 }} />}
-            change={k.change}
-            changeTone="success"
-          />
-        ))}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <KpiCard
+          label="Pending Registrations"
+          value={data.kpis.pendingRegistrations}
+          icon={<PendingActionsIcon sx={{ fontSize: 24 }} />}
+        />
+        <KpiCard
+          label="Approved Hospitals"
+          value={data.kpis.approvedHospitals}
+          icon={<DomainIcon sx={{ fontSize: 24 }} />}
+        />
+        <KpiCard
+          label="Total Doctors"
+          value={data.kpis.totalDoctors.toLocaleString()}
+          icon={<MedicalServicesIcon sx={{ fontSize: 24 }} />}
+        />
+        <KpiCard
+          label="Total Ambulances"
+          value={data.kpis.totalAmbulances}
+          icon={<LocalShippingIcon sx={{ fontSize: 24 }} />}
+        />
       </div>
 
-      <div className="grid grid-cols-5 gap-4 mb-6">
-        <Box sx={{ gridColumn: "span 3" }}>
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 mb-6">
+        <Box sx={{ gridColumn: { lg: "span 3" } }}>
           <SectionCard
             title="Pending Registrations Queue"
             bodyPadding={0}
@@ -212,77 +150,53 @@ export function DashboardPage() {
                 underline="hover"
                 sx={{ fontSize: 13, fontWeight: 500 }}
               >
-                View all 12 pending →
+                View all {data.kpis.pendingRegistrations} pending →
               </Link>
             }
           >
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell
-                    sx={{
-                      fontSize: 12,
-                      color: "text.secondary",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.04em",
-                    }}
-                  >
-                    Hospital Name
-                  </TableCell>
-                  <TableCell
-                    sx={{
-                      fontSize: 12,
-                      color: "text.secondary",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.04em",
-                    }}
-                  >
-                    City
-                  </TableCell>
-                  <TableCell
-                    sx={{
-                      fontSize: 12,
-                      color: "text.secondary",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.04em",
-                    }}
-                  >
-                    Submitted
-                  </TableCell>
-                  <TableCell
-                    sx={{
-                      fontSize: 12,
-                      color: "text.secondary",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.04em",
-                    }}
-                  >
-                    Source
-                  </TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {QUEUE.map((r) => (
-                  <TableRow key={r.name} hover>
-                    <TableCell sx={{ fontSize: 14 }}>{r.name}</TableCell>
-                    <TableCell sx={{ fontSize: 14 }}>{r.city}</TableCell>
-                    <TableCell sx={{ fontSize: 14, color: "text.secondary" }}>
-                      {r.submitted}
-                    </TableCell>
-                    <TableCell>
-                      <StatusChip
-                        label={r.source}
-                        tone={SOURCE_TONE[r.source]}
-                      />
-                    </TableCell>
+            {data.pendingQueue.length === 0 ? (
+              <Box sx={{ p: 4, textAlign: "center", color: "text.secondary" }}>
+                <Typography variant="body2">No pending registrations.</Typography>
+              </Box>
+            ) : (
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    {["Hospital Name", "City", "Submitted", "Source"].map((h) => (
+                      <TableCell
+                        key={h}
+                        sx={{
+                          fontSize: 12,
+                          color: "text.secondary",
+                          textTransform: "uppercase",
+                          letterSpacing: "0.04em",
+                        }}
+                      >
+                        {h}
+                      </TableCell>
+                    ))}
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHead>
+                <TableBody>
+                  {data.pendingQueue.map((r) => (
+                    <TableRow key={r.id} hover>
+                      <TableCell sx={{ fontSize: 14 }}>{r.hospitalName}</TableCell>
+                      <TableCell sx={{ fontSize: 14 }}>{r.city}</TableCell>
+                      <TableCell sx={{ fontSize: 14, color: "text.secondary" }}>
+                        {formatRelative(r.createdAt)}
+                      </TableCell>
+                      <TableCell>
+                        <StatusChip label={r.source} tone={SOURCE_TONE[r.source]} />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
           </SectionCard>
         </Box>
 
-        <Box sx={{ gridColumn: "span 2" }}>
+        <Box sx={{ gridColumn: { lg: "span 2" } }}>
           <SectionCard
             title="Recent Activity"
             action={
@@ -297,69 +211,53 @@ export function DashboardPage() {
             }
             bodyPadding={0}
           >
-            <Box>
-              {ACTIVITY.map((a, i) => (
-                <Box key={i}>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 1.5,
-                      px: 3,
-                      py: 1.5,
-                    }}
-                  >
-                    <ActivityIcon kind={a.kind} />
-                    <Box sx={{ flex: 1, minWidth: 0 }}>
-                      <Typography sx={{ fontSize: 14, fontWeight: 500 }} noWrap>
-                        {a.text}
-                      </Typography>
-                      <Typography
-                        sx={{ fontSize: 12, color: "text.secondary" }}
-                      >
-                        {a.when}
+            {data.recentActivity.length === 0 ? (
+              <Box sx={{ p: 4, textAlign: "center", color: "text.secondary" }}>
+                <Typography variant="body2">No recent activity.</Typography>
+              </Box>
+            ) : (
+              <Box>
+                {data.recentActivity.map((a, i) => (
+                  <Box key={a.id}>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, px: 3, py: 1.5 }}>
+                      <ActivityIcon action={a.action} />
+                      <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Typography sx={{ fontSize: 14, fontWeight: 500 }} noWrap>
+                          {a.action}
+                          {a.hospitalName ? ` · ${a.hospitalName}` : ""}
+                        </Typography>
+                        <Typography sx={{ fontSize: 12, color: "text.secondary" }}>
+                          {formatRelative(a.createdAt)}
+                        </Typography>
+                      </Box>
+                      <Typography sx={{ fontSize: 12, color: "text.secondary", whiteSpace: "nowrap" }}>
+                        by {a.actorName}
                       </Typography>
                     </Box>
-                    <Typography
-                      sx={{
-                        fontSize: 12,
-                        color: "text.secondary",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      by {a.actor}
-                    </Typography>
+                    {i < data.recentActivity.length - 1 && <Divider />}
                   </Box>
-                  {i < ACTIVITY.length - 1 && <Divider />}
-                </Box>
-              ))}
-            </Box>
+                ))}
+              </Box>
+            )}
           </SectionCard>
         </Box>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <SectionCard title="Hospitals by Status">
-          <Box sx={{ display: "flex", alignItems: "center", gap: 3 }}>
-            <Box
-              sx={{
-                position: "relative",
-                width: 220,
-                height: 220,
-                flexShrink: 0,
-              }}
-            >
+          <Box sx={{ display: "flex", alignItems: "center", gap: 3, flexWrap: "wrap" }}>
+            <Box sx={{ position: "relative", width: 220, height: 220, flexShrink: 0 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
-                    data={STATUS_PIE}
+                    data={statusPie}
                     innerRadius={70}
                     outerRadius={100}
                     paddingAngle={2}
                     dataKey="value"
                     stroke="none"
                   >
-                    {STATUS_PIE.map((s) => (
+                    {statusPie.map((s) => (
                       <Cell key={s.name} fill={s.color} />
                     ))}
                   </Pie>
@@ -377,27 +275,13 @@ export function DashboardPage() {
                   pointerEvents: "none",
                 }}
               >
-                <Typography sx={{ fontSize: 28, fontWeight: 600 }}>
-                  {STATUS_TOTAL}
-                </Typography>
-                <Typography sx={{ fontSize: 12, color: "text.secondary" }}>
-                  total
-                </Typography>
+                <Typography sx={{ fontSize: 28, fontWeight: 600 }}>{statusTotal}</Typography>
+                <Typography sx={{ fontSize: 12, color: "text.secondary" }}>total</Typography>
               </Box>
             </Box>
-            <Box
-              sx={{
-                flex: 1,
-                display: "flex",
-                flexDirection: "column",
-                gap: 1.25,
-              }}
-            >
-              {STATUS_PIE.map((s) => (
-                <Box
-                  key={s.name}
-                  sx={{ display: "flex", alignItems: "center", gap: 1.25 }}
-                >
+            <Box sx={{ flex: 1, minWidth: 160, display: "flex", flexDirection: "column", gap: 1.25 }}>
+              {statusPie.map((s) => (
+                <Box key={s.name} sx={{ display: "flex", alignItems: "center", gap: 1.25 }}>
                   <Box
                     sx={{
                       width: 10,
@@ -407,12 +291,8 @@ export function DashboardPage() {
                       flexShrink: 0,
                     }}
                   />
-                  <Typography sx={{ fontSize: 14, flex: 1 }}>
-                    {s.name}
-                  </Typography>
-                  <Typography sx={{ fontSize: 14, fontWeight: 600 }}>
-                    {s.value}
-                  </Typography>
+                  <Typography sx={{ fontSize: 14, flex: 1 }}>{s.name}</Typography>
+                  <Typography sx={{ fontSize: 14, fontWeight: 600 }}>{s.value}</Typography>
                 </Box>
               ))}
             </Box>
@@ -423,20 +303,11 @@ export function DashboardPage() {
           <Box sx={{ height: 200 }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
-                data={REJECTIONS}
+                data={data.rejectionsLast30d}
                 margin={{ top: 10, right: 10, bottom: 10, left: 0 }}
               >
-                <CartesianGrid
-                  strokeDasharray="3 3"
-                  stroke="#E5E7EB"
-                  vertical={false}
-                />
-                <XAxis
-                  dataKey="week"
-                  tick={{ fontSize: 12, fill: "#595959" }}
-                  axisLine={false}
-                  tickLine={false}
-                />
+                <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" vertical={false} />
+                <XAxis dataKey="week" tick={{ fontSize: 12, fill: "#595959" }} axisLine={false} tickLine={false} />
                 <YAxis
                   tick={{ fontSize: 12, fill: "#595959" }}
                   axisLine={false}
@@ -448,9 +319,11 @@ export function DashboardPage() {
               </BarChart>
             </ResponsiveContainer>
           </Box>
-          <Typography sx={{ fontSize: 12, color: "text.secondary", mt: 1 }}>
-            Click a bar to filter the audit log.
-          </Typography>
+          {data.rejectionsLast30d.length === 0 && (
+            <Typography sx={{ fontSize: 12, color: "text.secondary", mt: 1, textAlign: "center" }}>
+              No rejections in the last 30 days.
+            </Typography>
+          )}
         </SectionCard>
       </div>
     </>

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+﻿import { useMemo, useState } from "react";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
@@ -79,7 +79,7 @@ export function RequestChangeDialog({
       onClose={onCancel}
       maxWidth="xs"
       fullWidth
-      PaperProps={{ sx: { width: 520 } }}
+      PaperProps={{ sx: { width: "100%", maxWidth: 520, m: { xs: 2, sm: 4 } } }}
     >
       <DialogTitle
         sx={{
@@ -121,7 +121,7 @@ export function RequestChangeDialog({
           ))}
         </TextField>
 
-        <div className="grid grid-cols-2 gap-3 mb-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
           <TextField
             label="Current value"
             value={current}

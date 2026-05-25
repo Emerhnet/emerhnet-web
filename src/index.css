@@ -16,7 +16,11 @@
   --color-bg-alt: #f2eee6;
   --color-border: #dcd7cd;
 
-  --font-sans: "Inter", system-ui, sans-serif;
+  --font-sans:
+    "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    system-ui, sans-serif;
+  --font-serif: "IBM Plex Serif", Georgia, serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
   --radius-card: 8px;
   --radius-chip: 6px;
   --radius-modal: 12px;

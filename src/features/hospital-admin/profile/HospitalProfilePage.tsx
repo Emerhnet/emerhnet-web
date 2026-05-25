@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+﻿import { useEffect, useRef, useState } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
@@ -411,10 +411,10 @@ export function HospitalProfilePage() {
         }
       />
 
-      <div className="grid grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
         <Box
           sx={{
-            gridColumn: "span 3",
+            gridColumn: { xs: "auto", lg: "span 3" },
             display: "flex",
             flexDirection: "column",
             gap: 2,
@@ -429,7 +429,7 @@ export function HospitalProfilePage() {
           )}
 
           <SectionCard title="Identity">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <ReadRow
                 label="Hospital Name"
                 value={hospital.hospitalName}
@@ -446,7 +446,7 @@ export function HospitalProfilePage() {
           </SectionCard>
 
           <SectionCard title="Contact">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {editing ? (
                 <>
                   <TextField
@@ -510,7 +510,7 @@ export function HospitalProfilePage() {
                   fullWidth
                   sx={{ mb: 2 }}
                 />
-                <div className="grid grid-cols-3 gap-3 mb-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 mb-2">
                   <TextField
                     label="City"
                     value={form.city}
@@ -533,7 +533,7 @@ export function HospitalProfilePage() {
                     }
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <ReadRow
                     label="Latitude"
                     value={String(hospital.address.latitude)}
@@ -552,12 +552,12 @@ export function HospitalProfilePage() {
                   label="Address"
                   value={`${hospital.address.line1}${hospital.address.line2 ? ", " + hospital.address.line2 : ""}`}
                 />
-                <div className="grid grid-cols-3 gap-4 mt-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-2">
                   <ReadRow label="City" value={hospital.address.city} />
                   <ReadRow label="State" value={hospital.address.state} />
                   <ReadRow label="Pincode" value={hospital.address.pincode} />
                 </div>
-                <div className="grid grid-cols-2 gap-4 mt-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
                   <ReadRow
                     label="Latitude"
                     value={String(hospital.address.latitude)}

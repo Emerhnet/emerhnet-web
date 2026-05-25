@@ -1,4 +1,4 @@
-import { Controller, useForm, useWatch } from "react-hook-form";
+﻿import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router-dom";
 import { useSnackbar } from "notistack";
@@ -151,7 +151,7 @@ export function AddressLocationStep() {
           )}
         />
 
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           <div>
             <FieldLabel htmlFor="city" required>
               City
@@ -227,7 +227,7 @@ export function AddressLocationStep() {
           </Typography>
         </Box>
 
-        <div className="grid grid-cols-2 gap-4 mb-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-2">
           <div>
             <FieldLabel htmlFor="latitude" required>
               Latitude

@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import React, { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
@@ -14,6 +14,8 @@ import MenuItem from "@mui/material/MenuItem";
 import InputAdornment from "@mui/material/InputAdornment";
 import Alert from "@mui/material/Alert";
 import Skeleton from "@mui/material/Skeleton";
+import Chip from "@mui/material/Chip";
+import Tooltip from "@mui/material/Tooltip";
 import { DataGrid, type GridColDef } from "@mui/x-data-grid";
 import { useSnackbar } from "notistack";
 import BlockIcon from "@mui/icons-material/Block";
@@ -23,6 +25,12 @@ import EditIcon from "@mui/icons-material/Edit";
 import DownloadIcon from "@mui/icons-material/Download";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import PlayCircleIcon from "@mui/icons-material/PlayCircle";
+import DescriptionIcon from "@mui/icons-material/Description";
+import MedicalServicesIcon from "@mui/icons-material/MedicalServices";
+import DirectionsRunIcon from "@mui/icons-material/DirectionsRun";
+import BuildIcon from "@mui/icons-material/Build";
+import CancelIcon from "@mui/icons-material/Cancel";
+import { iconForDepartment } from "@/features/hospital-admin/departments/icons";
 import { Breadcrumbs } from "@/shared/components/Breadcrumbs";
 import { SectionCard } from "@/shared/components/SectionCard";
 import {
@@ -36,6 +44,11 @@ import {
   useHospital,
   useSuspendHospital,
   useReactivateHospital,
+  useHospitalDoctors,
+  useHospitalDepartments,
+  useHospitalBeds,
+  useHospitalAmbulances,
+  useHospitalDocumentUrl,
   type ApiHospital,
   type ApiHospitalStatus,
 } from "../api/hospitals";
@@ -92,10 +105,10 @@ function OverviewTab({ hospital }: { hospital: ApiHospital }) {
     .join("");
 
   return (
-    <div className="grid grid-cols-5 gap-4">
+    <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
       <Box
         sx={{
-          gridColumn: "span 3",
+          gridColumn: { xs: "auto", lg: "span 3" },
           display: "flex",
           flexDirection: "column",
           gap: 2,
@@ -121,7 +134,7 @@ function OverviewTab({ hospital }: { hospital: ApiHospital }) {
             </Link>
           }
         >
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <ReadRow label="Hospital Name" value={hospital.hospitalName} />
             <ReadRow label="NIN" value={hospital.nin} />
             <ReadRow
@@ -251,7 +264,7 @@ function OverviewTab({ hospital }: { hospital: ApiHospital }) {
                   mt: 0.25,
                 }}
               >
-                {address.latitude}° N, {address.longitude}° E
+                {address.latitude}Â° N, {address.longitude}Â° E
               </Typography>
             </Box>
             <Button
@@ -291,178 +304,550 @@ type StubDoctorRow = {
   status: string;
 };
 
-function DoctorsTab() {
-  const [q, setQ] = useState("");
-  const [department, setDepartment] = useState("All");
-  const [status, setStatus] = useState("All");
-  const { enqueueSnackbar } = useSnackbar();
+function DoctorsTabImpl({ hospitalId }: { hospitalId: string }) {
+  const { data, isLoading, isError, refetch } = useHospitalDoctors(hospitalId);
+  const { data: deptList } = useHospitalDepartments(hospitalId);
+  const deptMap = new Map(
+    (deptList ?? []).map((d) => [d.id as string, d.name as string]),
+  );
 
-  const columns: GridColDef<StubDoctorRow>[] = [
+  const columns: GridColDef<Record<string, unknown>>[] = [
     {
       field: "fullName",
       headerName: "Doctor",
       flex: 1.4,
       minWidth: 220,
-      renderCell: ({ row }) => (
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, py: 1 }}>
-          <Avatar
-            sx={{
-              width: 32,
-              height: 32,
-              bgcolor: "primary.main",
-              fontSize: 12,
-            }}
-          >
-            {row.fullName
-              .split(" ")
-              .map((n: string) => n[0])
-              .slice(0, 2)
-              .join("")}
-          </Avatar>
-          <Box>
-            <Typography sx={{ fontSize: 14, fontWeight: 500 }}>
-              {row.fullName}
-            </Typography>
-            <Typography sx={{ fontSize: 12, color: "text.secondary" }}>
-              {row.councilReg}
-            </Typography>
+      renderCell: ({ row }) => {
+        const name = String(row.fullName ?? "");
+        const reg = String(row.councilReg ?? "");
+        return (
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+            <Avatar
+              src={(row.photoUrl as string | null) ?? undefined}
+              sx={{ width: 32, height: 32, bgcolor: "primary.main", fontSize: 12 }}
+            >
+              {name
+                .split(" ")
+                .map((n) => n[0])
+                .slice(0, 2)
+                .join("")}
+            </Avatar>
+            <Box>
+              <Typography sx={{ fontSize: 14, fontWeight: 500 }}>{name}</Typography>
+              <Typography sx={{ fontSize: 12, color: "text.secondary", fontFamily: "ui-monospace, monospace" }}>
+                {reg}
+              </Typography>
+            </Box>
           </Box>
-        </Box>
-      ),
+        );
+      },
     },
-    { field: "department", headerName: "Department", flex: 1, minWidth: 160 },
+    {
+      field: "departmentId",
+      headerName: "Department",
+      flex: 1,
+      minWidth: 160,
+      valueGetter: (_v, row) => deptMap.get(String(row.departmentId)) ?? "—",
+    },
     {
       field: "specialisation",
       headerName: "Specialisation",
       flex: 1.2,
       minWidth: 200,
     },
-    { field: "joined", headerName: "Joined", flex: 0.7, minWidth: 110 },
+    {
+      field: "joinedAt",
+      headerName: "Joined",
+      flex: 0.7,
+      minWidth: 110,
+      renderCell: ({ row }) =>
+        row.joinedAt
+          ? formatIst(String(row.joinedAt), "dd MMM yyyy")
+          : "—",
+    },
     {
       field: "status",
       headerName: "Status",
       flex: 0.6,
-      minWidth: 110,
-      renderCell: ({ row }) => (
-        <StatusChip
-          label={row.status}
-          tone={row.status === "Active" ? "success" : "muted"}
-        />
-      ),
-    },
-    {
-      field: "action",
-      headerName: "Action",
-      flex: 0.4,
-      minWidth: 80,
-      align: "right",
-      headerAlign: "right",
-      sortable: false,
-      filterable: false,
-      renderCell: () => (
-        <IconButton
-          size="small"
-          onClick={() =>
-            enqueueSnackbar("View audit (coming soon).", { variant: "info" })
-          }
-          aria-label="Actions"
-        >
-          <MoreVertIcon fontSize="small" />
-        </IconButton>
-      ),
+      minWidth: 130,
+      renderCell: ({ row }) => {
+        if (row.deactivatedAt) return <StatusChip label="Deactivated" tone="muted" />;
+        const d = String(row.dutyStatus ?? "active");
+        const label =
+          d === "active" ? "Active" : d === "on_leave" ? "On Leave" : "Off Duty";
+        const tone: "success" | "warning" | "danger" =
+          d === "active" ? "success" : d === "on_leave" ? "warning" : "danger";
+        return <StatusChip label={label} tone={tone} />;
+      },
     },
   ];
 
-  void q;
-  void department;
-  void status;
+  if (isError) {
+    return (
+      <Alert
+        severity="error"
+        action={<Button size="small" onClick={() => void refetch()}>Retry</Button>}
+      >
+        Failed to load doctors.
+      </Alert>
+    );
+  }
 
   return (
     <>
+      <Box sx={{ mb: 2 }}>
+        <Typography sx={{ fontSize: 20, fontWeight: 600 }}>
+          Registered Practitioners
+        </Typography>
+        <Typography variant="body2" sx={{ color: "text.secondary" }}>
+          Read-only. The Hospital Admin manages this list.
+        </Typography>
+      </Box>
+      {isLoading ? (
+        <Card sx={{ p: 2 }}>
+          {[...Array(5)].map((_, i) => (
+            <Skeleton key={i} height={56} sx={{ mb: 1 }} />
+          ))}
+        </Card>
+      ) : (
+        <Card sx={{ overflow: "hidden" }}>
+          <DataGrid
+            rows={data?.items ?? []}
+            columns={columns}
+            rowHeight={64}
+            getRowId={(r) => String(r.id)}
+            initialState={{ pagination: { paginationModel: { pageSize: 20, page: 0 } } }}
+            pageSizeOptions={[20, 50, 100]}
+            disableRowSelectionOnClick
+            autoHeight
+            sx={{
+              border: "none",
+              "& .MuiDataGrid-columnHeaderTitle": {
+                fontSize: 13,
+                fontWeight: 500,
+                textTransform: "uppercase",
+                letterSpacing: "0.04em",
+                color: "text.secondary",
+              },
+              "& .MuiDataGrid-cell": { display: "flex", alignItems: "center" },
+              "& .MuiDataGrid-row:hover": { bgcolor: "#FAFAFA" },
+              "& .MuiDataGrid-cell:focus, & .MuiDataGrid-cell:focus-within": { outline: "none" },
+            }}
+          />
+        </Card>
+      )}
+    </>
+  );
+}
+
+function DepartmentsTab({ hospitalId }: { hospitalId: string }) {
+  const { data, isLoading, isError, refetch } = useHospitalDepartments(hospitalId);
+  if (isError)
+    return (
+      <Alert
+        severity="error"
+        action={<Button size="small" onClick={() => void refetch()}>Retry</Button>}
+      >
+        Failed to load departments.
+      </Alert>
+    );
+  if (isLoading) return <Skeleton variant="rounded" height={200} />;
+  const rows = data ?? [];
+  if (rows.length === 0)
+    return (
+      <Card sx={{ p: 4, textAlign: "center" }}>
+        <Typography variant="body2" sx={{ color: "text.secondary" }}>
+          No departments configured.
+        </Typography>
+      </Card>
+    );
+  return (
+    <Box
+      sx={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fill, minmax(240px, 320px))",
+        gap: 2,
+        justifyContent: "start",
+      }}
+    >
+      {rows.map((d) => {
+        const Icon = iconForDepartment(String(d.name));
+        return (
+          <Card key={String(d.id)} sx={{ p: 2.5, display: "flex", flexDirection: "column", gap: 1.5 }}>
+            <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1.5 }}>
+              <Box
+                sx={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: 1,
+                  bgcolor: "#E8EEF5",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                }}
+              >
+                <Icon sx={{ fontSize: 22, color: "primary.main" }} />
+              </Box>
+              <Box sx={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 0.75 }}>
+                <Typography sx={{ fontSize: 18, fontWeight: 600, lineHeight: 1.2 }}>
+                  {String(d.name)}
+                </Typography>
+                <Box>
+                  <StatusChip
+                    label={d.active ? "Active" : "Inactive"}
+                    tone={d.active ? "info" : "danger"}
+                  />
+                </Box>
+              </Box>
+            </Box>
+            <Box>
+              <Typography
+                variant="caption"
+                sx={{
+                  color: "text.secondary",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.04em",
+                  fontWeight: 500,
+                  display: "block",
+                }}
+              >
+                Head of Department
+              </Typography>
+              <Typography sx={{ fontSize: 14, fontWeight: 500, mt: 0.25 }}>
+                {(d.headDoctorName as string | null) ?? "Not assigned"}
+              </Typography>
+            </Box>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 0.75,
+                mt: "auto",
+                pt: 1,
+                borderTop: "1px solid",
+                borderColor: "divider",
+              }}
+            >
+              <MedicalServicesIcon sx={{ fontSize: 16, color: "text.secondary" }} />
+              <Typography sx={{ fontSize: 14, fontWeight: 500 }}>
+                {String(d.doctorCount ?? 0)} doctors
+              </Typography>
+            </Box>
+          </Card>
+        );
+      })}
+    </Box>
+  );
+}
+
+function BedsTab({ hospitalId }: { hospitalId: string }) {
+  const { data, isLoading, isError, refetch } = useHospitalBeds(hospitalId);
+  if (isError)
+    return (
+      <Alert
+        severity="error"
+        action={<Button size="small" onClick={() => void refetch()}>Retry</Button>}
+      >
+        Failed to load beds.
+      </Alert>
+    );
+  if (isLoading) return <Skeleton variant="rounded" height={200} />;
+  const rows = data?.items ?? [];
+  return (
+    <>
+      <Box sx={{ display: "flex", gap: 2, mb: 2, flexWrap: "wrap" }}>
+        <Card sx={{ p: 2, flex: 1, minWidth: 180 }}>
+          <Typography variant="caption" sx={{ color: "text.secondary", textTransform: "uppercase" }}>
+            Total
+          </Typography>
+          <Typography sx={{ fontSize: 28, fontWeight: 700 }}>{data?.totals.total ?? 0}</Typography>
+        </Card>
+        <Card sx={{ p: 2, flex: 1, minWidth: 180 }}>
+          <Typography variant="caption" sx={{ color: "text.secondary", textTransform: "uppercase" }}>
+            Occupied
+          </Typography>
+          <Typography sx={{ fontSize: 28, fontWeight: 700 }}>{data?.totals.occupied ?? 0}</Typography>
+        </Card>
+        <Card sx={{ p: 2, flex: 1, minWidth: 180 }}>
+          <Typography variant="caption" sx={{ color: "text.secondary", textTransform: "uppercase" }}>
+            Available
+          </Typography>
+          <Typography sx={{ fontSize: 28, fontWeight: 700, color: "success.main" }}>
+            {(data?.totals.total ?? 0) - (data?.totals.occupied ?? 0)}
+          </Typography>
+        </Card>
+      </Box>
+      {rows.length === 0 ? (
+        <Card sx={{ p: 4, textAlign: "center" }}>
+          <Typography variant="body2" sx={{ color: "text.secondary" }}>
+            No bed types configured.
+          </Typography>
+        </Card>
+      ) : (
+        <Card sx={{ overflow: "hidden" }}>
+          <DataGrid
+            rows={rows}
+            columns={[
+              { field: "type", headerName: "Type", flex: 1.5, minWidth: 200 },
+              { field: "total", headerName: "Total", flex: 0.5, minWidth: 80, type: "number" },
+              { field: "occupied", headerName: "Occupied", flex: 0.5, minWidth: 90, type: "number" },
+              {
+                field: "available",
+                headerName: "Available",
+                flex: 0.5,
+                minWidth: 90,
+                valueGetter: (_v, row) =>
+                  (row.total as number) - (row.occupied as number),
+              },
+            ] as GridColDef<Record<string, unknown>>[]}
+            rowHeight={56}
+            getRowId={(r) => String(r.id)}
+            disableRowSelectionOnClick
+            autoHeight
+            sx={{
+              border: "none",
+              "& .MuiDataGrid-columnHeaderTitle": {
+                fontSize: 13,
+                fontWeight: 500,
+                textTransform: "uppercase",
+                letterSpacing: "0.04em",
+                color: "text.secondary",
+              },
+              "& .MuiDataGrid-row:hover": { bgcolor: "#FAFAFA" },
+            }}
+          />
+        </Card>
+      )}
+    </>
+  );
+}
+
+type AmbStatus = "Available" | "On Duty" | "Under Maintenance" | "Out of Service";
+
+const AMB_PILL_TONE: Record<
+  AmbStatus,
+  { bg: string; fg: string; rail: string; Icon: typeof CheckCircleIcon }
+> = {
+  Available: { bg: "#D1E7DD", fg: "#0F5132", rail: "#0F5132", Icon: CheckCircleIcon },
+  "On Duty": { bg: "#CFE2FF", fg: "#0B5394", rail: "#0B5394", Icon: DirectionsRunIcon },
+  "Under Maintenance": { bg: "#FFF3CD", fg: "#8B5A00", rail: "#8B5A00", Icon: BuildIcon },
+  "Out of Service": { bg: "#F8D7DA", fg: "#842029", rail: "#842029", Icon: CancelIcon },
+};
+
+const AMB_STATUS_TONE: Record<AmbStatus, "success" | "info" | "warning" | "danger"> = {
+  Available: "success",
+  "On Duty": "info",
+  "Under Maintenance": "warning",
+  "Out of Service": "danger",
+};
+
+function AmbStatusPill({ label, count }: { label: AmbStatus; count: number }) {
+  const t = AMB_PILL_TONE[label];
+  const dim = count === 0;
+  const Icon = t.Icon;
+  return (
+    <Card
+      sx={{
+        flex: 1,
+        minWidth: 200,
+        position: "relative",
+        display: "flex",
+        alignItems: "center",
+        gap: 2,
+        p: 2,
+        pl: 2.5,
+        overflow: "hidden",
+        "&::before": {
+          content: '""',
+          position: "absolute",
+          left: 0,
+          top: 8,
+          bottom: 8,
+          width: 4,
+          borderRadius: 999,
+          bgcolor: t.rail,
+        },
+      }}
+    >
       <Box
         sx={{
+          width: 40,
+          height: 40,
+          borderRadius: 1,
+          bgcolor: t.bg,
           display: "flex",
-          justifyContent: "space-between",
           alignItems: "center",
-          mb: 2,
+          justifyContent: "center",
+          flexShrink: 0,
         }}
       >
-        <Box>
-          <Typography sx={{ fontSize: 20, fontWeight: 600 }}>
-            Registered Practitioners
-          </Typography>
-          <Typography variant="body2" sx={{ color: "text.secondary" }}>
-            Read-only view. The Hospital Admin manages this list.
-          </Typography>
-        </Box>
-        <Button
-          variant="outlined"
-          startIcon={<DownloadIcon />}
-          onClick={() =>
-            enqueueSnackbar("Export list (coming soon).", { variant: "info" })
-          }
-          sx={{ height: 40, fontWeight: 600 }}
-        >
-          Export List
-        </Button>
+        <Icon sx={{ color: t.fg, fontSize: 22 }} />
       </Box>
-      <Card
-        sx={{
-          p: 2,
-          mb: 2,
-          display: "flex",
-          alignItems: "center",
-          gap: 2,
-          flexWrap: "wrap",
-        }}
-      >
-        <TextField
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder="Search by name or council reg"
-          size="small"
-          sx={{ width: 280 }}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon fontSize="small" sx={{ color: "text.secondary" }} />
-              </InputAdornment>
-            ),
+      <Box sx={{ flex: 1, minWidth: 0 }}>
+        <Typography
+          sx={{
+            fontSize: 11,
+            fontWeight: 600,
+            color: "text.secondary",
+            textTransform: "uppercase",
+            letterSpacing: "0.06em",
           }}
-        />
-        <TextField
-          select
-          size="small"
-          label="Department"
-          value={department}
-          onChange={(e) => setDepartment(e.target.value)}
-          sx={{ width: 220 }}
         >
-          <MenuItem value="All">All</MenuItem>
-        </TextField>
-        <TextField
-          select
-          size="small"
-          label="Status"
-          value={status}
-          onChange={(e) => setStatus(e.target.value)}
-          sx={{ width: 150 }}
+          {label}
+        </Typography>
+        <Typography
+          sx={{
+            fontSize: 28,
+            fontWeight: 600,
+            lineHeight: 1.1,
+            color: dim ? "text.disabled" : t.fg,
+            mt: 0.25,
+          }}
         >
-          <MenuItem value="All">All</MenuItem>
-          <MenuItem value="Active">Active</MenuItem>
-          <MenuItem value="Deactivated">Deactivated</MenuItem>
-        </TextField>
-      </Card>
+          {String(count).padStart(2, "0")}
+        </Typography>
+      </Box>
+    </Card>
+  );
+}
+
+function AmbulancesTab({ hospitalId }: { hospitalId: string }) {
+  const { data, isLoading, isError, refetch } = useHospitalAmbulances(hospitalId);
+  if (isError)
+    return (
+      <Alert
+        severity="error"
+        action={<Button size="small" onClick={() => void refetch()}>Retry</Button>}
+      >
+        Failed to load ambulances.
+      </Alert>
+    );
+  if (isLoading) return <Skeleton variant="rounded" height={200} />;
+  const rows = data?.items ?? [];
+  const counts: Record<AmbStatus, number> = {
+    Available: 0,
+    "On Duty": 0,
+    "Under Maintenance": 0,
+    "Out of Service": 0,
+  };
+  rows.forEach((a) => {
+    const s = String(a.status) as AmbStatus;
+    if (counts[s] !== undefined) counts[s] += 1;
+  });
+  const STATUS_KEYS: AmbStatus[] = [
+    "Available",
+    "On Duty",
+    "Under Maintenance",
+    "Out of Service",
+  ];
+
+  return (
+    <>
+      <Box sx={{ display: "flex", gap: 2, mb: 2, flexWrap: "wrap" }}>
+        {STATUS_KEYS.map((s) => (
+          <AmbStatusPill key={s} label={s} count={counts[s]} />
+        ))}
+      </Box>
       <Card sx={{ overflow: "hidden" }}>
         <DataGrid
-          rows={[]}
-          columns={columns}
-          rowHeight={56}
-          getRowId={(r) => r.id}
-          initialState={{
-            pagination: { paginationModel: { pageSize: 20, page: 0 } },
-          }}
-          pageSizeOptions={[20, 50, 100]}
+          rows={rows}
+          columns={[
+            {
+              field: "vehicleNumber",
+              headerName: "Vehicle Number",
+              flex: 1,
+              minWidth: 160,
+              renderCell: ({ row }) => (
+                <Typography
+                  sx={{
+                    fontSize: 14,
+                    fontWeight: 600,
+                    fontFamily: "ui-monospace, monospace",
+                    color: "primary.main",
+                  }}
+                >
+                  {String(row.vehicleNumber)}
+                </Typography>
+              ),
+            },
+            {
+              field: "type",
+              headerName: "Type",
+              flex: 0.6,
+              minWidth: 100,
+              renderCell: ({ row }) => (
+                <StatusChip label={String(row.type)} tone="primary" />
+              ),
+            },
+            {
+              field: "driver",
+              headerName: "Driver",
+              flex: 1.1,
+              minWidth: 180,
+              renderCell: ({ row }) => (
+                <Box>
+                  <Typography sx={{ fontSize: 14, fontWeight: 500 }}>
+                    {String(row.driverName)}
+                  </Typography>
+                  <Typography sx={{ fontSize: 12, color: "text.secondary" }}>
+                    {String(row.driverPhone)}
+                  </Typography>
+                </Box>
+              ),
+            },
+            {
+              field: "equipment",
+              headerName: "Equipment",
+              flex: 1.4,
+              minWidth: 220,
+              sortable: false,
+              renderCell: ({ row }) => {
+                const eq = (row.equipment as string[]) ?? [];
+                const visible = eq.slice(0, 2);
+                const rest = eq.length - 2;
+                return (
+                  <Tooltip title={eq.join(", ")}>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, flexWrap: "wrap" }}>
+                      {visible.map((e) => (
+                        <Chip
+                          key={e}
+                          size="small"
+                          label={e}
+                          sx={{ bgcolor: "#F2EEE6", fontSize: 11, height: 22 }}
+                        />
+                      ))}
+                      {rest > 0 && (
+                        <Chip
+                          size="small"
+                          label={`+${rest} more`}
+                          sx={{
+                            bgcolor: "#E8EEF5",
+                            color: "primary.main",
+                            fontSize: 11,
+                            height: 22,
+                            fontWeight: 500,
+                          }}
+                        />
+                      )}
+                    </Box>
+                  </Tooltip>
+                );
+              },
+            },
+            {
+              field: "status",
+              headerName: "Status",
+              flex: 0.7,
+              minWidth: 130,
+              renderCell: ({ row }) => {
+                const s = String(row.status) as AmbStatus;
+                return <StatusChip label={s} tone={AMB_STATUS_TONE[s] ?? "muted"} />;
+              },
+            },
+          ] as GridColDef<Record<string, unknown>>[]}
+          rowHeight={64}
+          getRowId={(r) => String(r.id)}
           disableRowSelectionOnClick
           autoHeight
           sx={{
@@ -474,16 +859,90 @@ function DoctorsTab() {
               letterSpacing: "0.04em",
               color: "text.secondary",
             },
+            "& .MuiDataGrid-cell": { display: "flex", alignItems: "center" },
             "& .MuiDataGrid-row:hover": { bgcolor: "#FAFAFA" },
-            "& .MuiDataGrid-cell:focus, & .MuiDataGrid-cell:focus-within": {
-              outline: "none",
-            },
           }}
         />
       </Card>
     </>
   );
 }
+
+function DocumentsTab({ hospital }: { hospital: ApiHospital }) {
+  if (!hospital.documents || hospital.documents.length === 0) {
+    return (
+      <Card sx={{ p: 4, textAlign: "center" }}>
+        <Typography variant="body2" sx={{ color: "text.secondary" }}>
+          No documents uploaded.
+        </Typography>
+      </Card>
+    );
+  }
+  return (
+    <Card sx={{ overflow: "hidden" }}>
+      {hospital.documents.map((d, i) => (
+        <DocRow
+          key={d.slotKey}
+          hospitalId={hospital.id}
+          doc={d}
+          divider={i < hospital.documents.length - 1}
+        />
+      ))}
+    </Card>
+  );
+}
+
+function DocRow({
+  hospitalId,
+  doc,
+  divider,
+}: {
+  hospitalId: string;
+  doc: ApiHospital["documents"][number];
+  divider: boolean;
+}) {
+  const [enabled, setEnabled] = useState(false);
+  const { data: url, isFetching } = useHospitalDocumentUrl(
+    hospitalId,
+    doc.slotKey,
+    enabled,
+  );
+  React.useEffect(() => {
+    if (url) window.open(url, "_blank", "noopener");
+  }, [url]);
+
+  const sizeKb = (doc.sizeBytes / 1024).toFixed(0);
+  return (
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        gap: 1.5,
+        px: 2.5,
+        py: 1.75,
+        borderBottom: divider ? "1px solid" : "none",
+        borderColor: "divider",
+      }}
+    >
+      <DescriptionIcon sx={{ color: "primary.main" }} />
+      <Box sx={{ flex: 1, minWidth: 0 }}>
+        <Typography sx={{ fontSize: 14, fontWeight: 600 }}>{doc.slotKey}</Typography>
+        <Typography sx={{ fontSize: 12, color: "text.secondary" }}>
+          {doc.fileName} · {sizeKb} KB
+        </Typography>
+      </Box>
+      <Button
+        size="small"
+        variant="outlined"
+        onClick={() => setEnabled(true)}
+        disabled={isFetching}
+      >
+        {isFetching ? "Loading…" : "View"}
+      </Button>
+    </Box>
+  );
+}
+
 
 function PlaceholderTab({ label }: { label: string }) {
   return (
@@ -656,11 +1115,11 @@ export function HospitalDetailPage() {
       </Tabs>
 
       {tab === 0 && <OverviewTab hospital={hospital} />}
-      {tab === 1 && <DoctorsTab />}
-      {tab === 2 && <PlaceholderTab label="Departments" />}
-      {tab === 3 && <PlaceholderTab label="Beds" />}
-      {tab === 4 && <PlaceholderTab label="Ambulances" />}
-      {tab === 5 && <PlaceholderTab label="Documents" />}
+      {tab === 1 && <DoctorsTabImpl hospitalId={hospital.id} />}
+      {tab === 2 && <DepartmentsTab hospitalId={hospital.id} />}
+      {tab === 3 && <BedsTab hospitalId={hospital.id} />}
+      {tab === 4 && <AmbulancesTab hospitalId={hospital.id} />}
+      {tab === 5 && <DocumentsTab hospital={hospital} />}
       {tab === 6 && <PlaceholderTab label="Audit Log" />}
 
       <SuspendDialog

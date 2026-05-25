@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import Drawer from "@mui/material/Drawer";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -189,7 +189,7 @@ export function RegisterAmbulanceDrawer({
         </TextField>
 
         <SectionHeader Icon={PersonIcon} title="Driver" />
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <TextField
             label="Driver name"
             required
@@ -236,7 +236,7 @@ export function RegisterAmbulanceDrawer({
         />
 
         <SectionHeader Icon={FlagIcon} title="Status" />
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {STATUS_OPTIONS.map((s) => {
             const t = TONE_BG[s];
             const selected = status === s;

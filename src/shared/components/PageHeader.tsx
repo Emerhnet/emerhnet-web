@@ -17,16 +17,30 @@ export function PageHeader({
     <Box
       sx={{
         display: "flex",
-        alignItems: "flex-start",
+        flexDirection: { xs: "column", sm: "row" },
+        alignItems: { xs: "stretch", sm: "flex-start" },
         justifyContent: "space-between",
+        gap: { xs: 1.5, sm: 2 },
         mb: 3,
       }}
     >
-      <Box>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+      <Box sx={{ minWidth: 0, flex: 1 }}>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            flexWrap: "wrap",
+            gap: 1.5,
+          }}
+        >
           <Typography
             variant="h1"
-            sx={{ fontSize: 28, fontWeight: 600, lineHeight: 1.25 }}
+            sx={{
+              fontSize: { xs: 22, sm: 26, md: 28 },
+              fontWeight: 600,
+              lineHeight: 1.25,
+              wordBreak: "break-word",
+            }}
           >
             {title}
           </Typography>
@@ -38,7 +52,17 @@ export function PageHeader({
           </Typography>
         )}
       </Box>
-      {action}
+      {action && (
+        <Box
+          sx={{
+            display: "flex",
+            flexShrink: 0,
+            "& > *": { width: { xs: "100%", sm: "auto" } },
+          }}
+        >
+          {action}
+        </Box>
+      )}
     </Box>
   );
 }

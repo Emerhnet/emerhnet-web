@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+﻿import type { ReactNode } from "react";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
@@ -34,7 +34,7 @@ export function ConfirmDialog({
       onClose={onCancel}
       maxWidth="xs"
       fullWidth
-      PaperProps={{ sx: { width: 480 } }}
+      PaperProps={{ sx: { width: "100%", maxWidth: 480, m: { xs: 2, sm: 4 } } }}
     >
       <DialogTitle sx={{ fontSize: 18, fontWeight: 600 }}>{title}</DialogTitle>
       <DialogContent>{body}</DialogContent>

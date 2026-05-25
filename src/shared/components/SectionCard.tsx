@@ -20,9 +20,11 @@ export function SectionCard({
       <Box
         sx={{
           display: "flex",
-          alignItems: "center",
+          alignItems: { xs: "flex-start", sm: "center" },
+          flexDirection: { xs: "column", sm: "row" },
           justifyContent: "space-between",
-          px: 3,
+          gap: 1,
+          px: { xs: 2, sm: 3 },
           py: 2,
         }}
       >
@@ -30,7 +32,9 @@ export function SectionCard({
         {action}
       </Box>
       <Divider />
-      <Box sx={{ p: bodyPadding }}>{children}</Box>
+      <Box sx={{ p: { xs: Math.min(bodyPadding, 2), sm: bodyPadding } }}>
+        {children}
+      </Box>
     </Card>
   );
 }

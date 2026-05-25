@@ -115,7 +115,7 @@ export function SendInvitationDialog({
       onClose={handleCancel}
       maxWidth="sm"
       fullWidth
-      PaperProps={{ sx: { width: 640, borderRadius: 2 } }}
+      PaperProps={{ sx: { width: "100%", maxWidth: 640, m: { xs: 2, sm: 4 }, borderRadius: 2 } }}
     >
       <DialogTitle
         sx={{
@@ -250,7 +250,7 @@ export function SendInvitationDialog({
 
         <SectionLabel>Recipient details</SectionLabel>
 
-        <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2 }}>
+        <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 2 }}>
           <TextField
             label="Hospital name"
             required

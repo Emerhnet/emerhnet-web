@@ -159,6 +159,61 @@ export function useSuspendHospital() {
   });
 }
 
+type ListPaged<T> = { items: T[]; total?: number };
+
+export function useHospitalDoctors(hospitalId: string) {
+  return useQuery({
+    queryKey: [...hospitalKeys.detail(hospitalId), "doctors"] as const,
+    queryFn: async () => {
+      const { data } = await api.get<ListPaged<Record<string, unknown>>>(
+        `/hospitals/${hospitalId}/doctors`,
+      );
+      return data;
+    },
+    enabled: Boolean(hospitalId),
+  });
+}
+
+export function useHospitalDepartments(hospitalId: string) {
+  return useQuery({
+    queryKey: [...hospitalKeys.detail(hospitalId), "departments"] as const,
+    queryFn: async () => {
+      const { data } = await api.get<ListPaged<Record<string, unknown>>>(
+        `/hospitals/${hospitalId}/departments`,
+      );
+      return data.items;
+    },
+    enabled: Boolean(hospitalId),
+  });
+}
+
+export function useHospitalBeds(hospitalId: string) {
+  return useQuery({
+    queryKey: [...hospitalKeys.detail(hospitalId), "beds"] as const,
+    queryFn: async () => {
+      const { data } = await api.get<{
+        items: Record<string, unknown>[];
+        totals: { total: number; occupied: number };
+      }>(`/hospitals/${hospitalId}/beds`);
+      return data;
+    },
+    enabled: Boolean(hospitalId),
+  });
+}
+
+export function useHospitalAmbulances(hospitalId: string) {
+  return useQuery({
+    queryKey: [...hospitalKeys.detail(hospitalId), "ambulances"] as const,
+    queryFn: async () => {
+      const { data } = await api.get<ListPaged<Record<string, unknown>>>(
+        `/hospitals/${hospitalId}/ambulances`,
+      );
+      return data;
+    },
+    enabled: Boolean(hospitalId),
+  });
+}
+
 export function useHospitalDocumentUrl(
   hospitalId: string,
   slotKey: string,

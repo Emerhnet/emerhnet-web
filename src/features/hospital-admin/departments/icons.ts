@@ -1,0 +1,45 @@
+import MedicalServicesIcon from "@mui/icons-material/MedicalServices";
+import FavoriteIcon from "@mui/icons-material/Favorite";
+import PsychologyIcon from "@mui/icons-material/Psychology";
+import AccessibilityNewIcon from "@mui/icons-material/AccessibilityNew";
+import ChildCareIcon from "@mui/icons-material/ChildCare";
+import LocalHospitalIcon from "@mui/icons-material/LocalHospital";
+import BiotechIcon from "@mui/icons-material/Biotech";
+import HealingIcon from "@mui/icons-material/Healing";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import HearingIcon from "@mui/icons-material/Hearing";
+import PregnantWomanIcon from "@mui/icons-material/PregnantWoman";
+import VaccinesIcon from "@mui/icons-material/Vaccines";
+import OpacityIcon from "@mui/icons-material/Opacity";
+import AirIcon from "@mui/icons-material/Air";
+import ReportProblemIcon from "@mui/icons-material/ReportProblem";
+import ScienceIcon from "@mui/icons-material/Science";
+import SelfImprovementIcon from "@mui/icons-material/SelfImprovement";
+import WcIcon from "@mui/icons-material/Wc";
+import RestaurantIcon from "@mui/icons-material/Restaurant";
+import type { SvgIconComponent } from "@mui/icons-material";
+
+export function iconForDepartment(name: string): SvgIconComponent {
+  const n = name.toLowerCase();
+  if (n.includes("cardio")) return FavoriteIcon;
+  if (n.includes("neuro")) return PsychologyIcon;
+  if (n.includes("ortho")) return AccessibilityNewIcon;
+  if (n.includes("paed") || n.includes("pedi") || n.includes("child")) return ChildCareIcon;
+  if (n.includes("emergency") || n.includes("trauma")) return ReportProblemIcon;
+  if (n.includes("radio") || n.includes("imaging")) return BiotechIcon;
+  if (n.includes("derma")) return HealingIcon;
+  if (n.includes("ophthal") || n.includes("eye")) return VisibilityIcon;
+  if (n.includes("ent")) return HearingIcon;
+  if (n.includes("obstet") || n.includes("gyna")) return PregnantWomanIcon;
+  if (n.includes("anaesth")) return VaccinesIcon;
+  if (n.includes("urolog") || n.includes("nephro")) return OpacityIcon;
+  if (n.includes("pulmon") || n.includes("respir")) return AirIcon;
+  if (n.includes("oncolog")) return ScienceIcon;
+  if (n.includes("psych")) return SelfImprovementIcon;
+  if (n.includes("patho") || n.includes("lab")) return BiotechIcon;
+  if (n.includes("gastro") || n.includes("nutri")) return RestaurantIcon;
+  if (n.includes("medicine") || n.includes("intern") || n.includes("general")) return LocalHospitalIcon;
+  if (n.includes("surge")) return MedicalServicesIcon;
+  if (n.includes("plastic") || n.includes("recon")) return WcIcon;
+  return MedicalServicesIcon;
+}

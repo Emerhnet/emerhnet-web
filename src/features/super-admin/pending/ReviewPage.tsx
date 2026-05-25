@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from "react";
+﻿import { useMemo, useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
@@ -285,15 +285,17 @@ export function ReviewPage() {
       <Box
         sx={{
           display: "flex",
+          flexDirection: { xs: "column", md: "row" },
+          gap: 2,
           justifyContent: "space-between",
-          alignItems: "flex-start",
+          alignItems: { xs: "stretch", md: "flex-start" },
           mb: 3,
         }}
       >
-        <Box>
+        <Box sx={{ minWidth: 0 }}>
           <Typography
             variant="h1"
-            sx={{ fontSize: 28, fontWeight: 600, mb: 1 }}
+            sx={{ fontSize: { xs: 22, sm: 26, md: 28 }, fontWeight: 600, mb: 1, wordBreak: "break-word" }}
           >
             {hospital.hospitalName}
           </Typography>
@@ -314,7 +316,7 @@ export function ReviewPage() {
             />
           </Box>
         </Box>
-        <Box sx={{ display: "flex", gap: 1.5 }}>
+        <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap", "& > *": { flex: { xs: 1, md: "0 0 auto" } } }}>
           <Button
             variant="outlined"
             color="error"
@@ -344,8 +346,8 @@ export function ReviewPage() {
         </Box>
       </Box>
 
-      <div className="grid grid-cols-5 gap-4 mb-4">
-        <Box sx={{ gridColumn: "span 3" }}>
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 mb-4">
+        <Box sx={{ gridColumn: { xs: "auto", lg: "span 3" } }}>
           <Card>
             <Tabs
               value={tab}
@@ -367,7 +369,7 @@ export function ReviewPage() {
             </Tabs>
             <Box sx={{ p: 3 }}>
               {tab === 0 && (
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <ReadRow
                     label="Hospital Name"
                     value={hospital.hospitalName}
@@ -418,7 +420,7 @@ export function ReviewPage() {
                 </div>
               )}
               {tab === 1 && (
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <ReadRow
                     label="Address line 1"
                     value={hospital.address.line1}
@@ -437,7 +439,7 @@ export function ReviewPage() {
                 </div>
               )}
               {tab === 2 && (
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <ReadRow
                     label="Hospital email"
                     value={hospital.contact.email}
@@ -464,7 +466,7 @@ export function ReviewPage() {
           </Card>
         </Box>
 
-        <Box sx={{ gridColumn: "span 2" }}>
+        <Box sx={{ gridColumn: { xs: "auto", lg: "span 2" } }}>
           <SectionCard title="Documents" bodyPadding={0}>
             <Box>
               {hospital.documents.length === 0 ? (
@@ -526,7 +528,7 @@ export function ReviewPage() {
                             mt: 0.25,
                           }}
                         >
-                          {d.fileName} · {formatBytes(d.sizeBytes)}
+                          {d.fileName} Â· {formatBytes(d.sizeBytes)}
                         </Typography>
                         <Box sx={{ mt: 0.75 }}>
                           <StatusChip
@@ -593,10 +595,10 @@ export function ReviewPage() {
                 <Box
                   sx={{
                     display: "grid",
-                    gridTemplateColumns: "48px 1fr 32px 1fr",
+                    gridTemplateColumns: { xs: "32px 1fr", md: "48px 1fr 32px 1fr" },
                     alignItems: "center",
-                    gap: 2,
-                    px: 3,
+                    gap: { xs: 1, md: 2 },
+                    px: { xs: 2, md: 3 },
                     py: 1.75,
                   }}
                 >

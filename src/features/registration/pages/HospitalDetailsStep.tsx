@@ -1,4 +1,4 @@
-import { Controller, useForm } from "react-hook-form";
+﻿import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router-dom";
 import Box from "@mui/material/Box";
@@ -132,7 +132,7 @@ export function HospitalDetailsStep() {
           )}
         />
 
-        <div className="grid grid-cols-2 gap-4 mb-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-2">
           <div>
             <FieldLabel htmlFor="nin" required>
               NIN
@@ -180,7 +180,7 @@ export function HospitalDetailsStep() {
             name="category"
             control={control}
             render={({ field }) => (
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                 {HOSPITAL_CATEGORIES.map((cat) => {
                   const Icon = CATEGORY_ICONS[cat];
                   const selected = field.value === cat;
@@ -234,7 +234,7 @@ export function HospitalDetailsStep() {
           )}
         </Box>
 
-        <div className="grid grid-cols-2 gap-4 mt-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-3">
           <YesNoField
             name="cghsEmpanelment"
             control={control}

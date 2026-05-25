@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
@@ -11,6 +11,7 @@ import Box from "@mui/material/Box";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
 import { MASTER_DEPARTMENT_LIST } from "../data";
+import { iconForDepartment } from "../icons";
 
 export type DepartmentFormPayload = { name: string };
 
@@ -45,7 +46,7 @@ export function AddDepartmentDialog({
       onClose={onCancel}
       maxWidth="xs"
       fullWidth
-      PaperProps={{ sx: { width: 480 } }}
+      PaperProps={{ sx: { width: "100%", maxWidth: 480, m: { xs: 2, sm: 4 } } }}
     >
       <DialogTitle
         sx={{
@@ -77,15 +78,56 @@ export function AddDepartmentDialog({
           options={MASTER_DEPARTMENT_LIST}
           inputValue={name}
           onInputChange={(_, v) => setName(v)}
-          renderInput={(p) => (
-            <TextField
-              {...p}
-              label="Department name"
-              required
-              helperText="Pick a common name or type a custom one."
-              autoFocus
-            />
-          )}
+          renderOption={(props, option) => {
+            const Icon = iconForDepartment(option);
+            const { key, ...rest } = props as React.HTMLAttributes<HTMLLIElement> & { key?: React.Key };
+            return (
+              <Box
+                component="li"
+                key={key as React.Key}
+                {...rest}
+                sx={{ display: "flex", alignItems: "center", gap: 1.25 }}
+              >
+                <Box
+                  sx={{
+                    width: 28,
+                    height: 28,
+                    borderRadius: 1,
+                    bgcolor: "#E8EEF5",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                  }}
+                >
+                  <Icon sx={{ fontSize: 16, color: "primary.main" }} />
+                </Box>
+                <Typography sx={{ fontSize: 14 }}>{option}</Typography>
+              </Box>
+            );
+          }}
+          renderInput={(p) => {
+            const InputIcon = iconForDepartment(name);
+            return (
+              <TextField
+                {...p}
+                label="Department name"
+                required
+                helperText="Pick a common name or type a custom one."
+                autoFocus
+                InputProps={{
+                  ...p.InputProps,
+                  startAdornment: name ? (
+                    <Box sx={{ display: "flex", alignItems: "center", mr: 0.5 }}>
+                      <InputIcon sx={{ fontSize: 18, color: "primary.main" }} />
+                    </Box>
+                  ) : (
+                    p.InputProps.startAdornment
+                  ),
+                }}
+              />
+            );
+          }}
         />
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2.5 }}>

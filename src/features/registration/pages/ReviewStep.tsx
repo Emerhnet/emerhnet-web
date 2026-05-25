@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSnackbar } from "notistack";
 import { getApiErrorMessage } from "@/shared/lib/apiError";
@@ -124,7 +124,7 @@ export function ReviewStep() {
           </Box>
         </AccordionSummary>
         <AccordionDetails>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <ReadRow
               label="Hospital name"
               value={hospitalDetails.hospitalName}
@@ -184,7 +184,7 @@ export function ReviewStep() {
           </Box>
         </AccordionSummary>
         <AccordionDetails>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <ReadRow
               label="Address line 1"
               value={addressLocation.addressLine1}
@@ -245,7 +245,7 @@ export function ReviewStep() {
           </Box>
         </AccordionSummary>
         <AccordionDetails>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <ReadRow
               label="Hospital email"
               value={adminContact.hospitalEmail}

@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import Typography from "@mui/material/Typography";
@@ -12,6 +12,7 @@ import Skeleton from "@mui/material/Skeleton";
 import AddIcon from "@mui/icons-material/Add";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import MedicalServicesIcon from "@mui/icons-material/MedicalServices";
+import { iconForDepartment } from "./icons";
 import { useSnackbar } from "notistack";
 import { PageHeader } from "@/shared/components/PageHeader";
 import { StatusChip } from "@/shared/components/StatusChip";
@@ -38,30 +39,54 @@ function DeptCard({
 }) {
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
   const canDeleteOrDeactivate = dept.doctorCount === 0;
+  const Icon = iconForDepartment(dept.name);
 
   return (
     <Card sx={{ p: 2.5, display: "flex", flexDirection: "column", gap: 1.5 }}>
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "flex-start",
-          justifyContent: "space-between",
-          gap: 1,
-        }}
-      >
-        <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Typography sx={{ fontSize: 16, fontWeight: 600 }}>
+      <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1.5 }}>
+        <Box
+          sx={{
+            width: 40,
+            height: 40,
+            borderRadius: 1,
+            bgcolor: "#E8EEF5",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+          }}
+        >
+          <Icon sx={{ fontSize: 22, color: "primary.main" }} />
+        </Box>
+        <Box sx={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 0.75 }}>
+          <Typography sx={{ fontSize: 18, fontWeight: 600, lineHeight: 1.2 }}>
             {dept.name}
           </Typography>
+          <Box>
+            <StatusChip
+              label={dept.active ? "Active" : "Inactive"}
+              tone={dept.active ? "info" : "danger"}
+            />
+          </Box>
         </Box>
-        <StatusChip
-          label={dept.active ? "Active" : "Inactive"}
-          tone={dept.active ? "success" : "muted"}
-        />
       </Box>
-      <Typography variant="body2" sx={{ color: "text.secondary" }}>
-        Head: {dept.headDoctorName ?? "Not assigned"}
-      </Typography>
+      <Box>
+        <Typography
+          variant="caption"
+          sx={{
+            color: "text.secondary",
+            textTransform: "uppercase",
+            letterSpacing: "0.04em",
+            fontWeight: 500,
+            display: "block",
+          }}
+        >
+          Head of Department
+        </Typography>
+        <Typography sx={{ fontSize: 14, fontWeight: 500, mt: 0.25 }}>
+          {dept.headDoctorName ?? "Not assigned"}
+        </Typography>
+      </Box>
       <Box
         sx={{
           display: "flex",
@@ -247,13 +272,29 @@ export function DepartmentsPage() {
       )}
 
       {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div
+          className="gap-4"
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(240px, 320px))",
+            justifyContent: "start",
+            maxWidth: "100%",
+          }}
+        >
           {[...Array(6)].map((_, i) => (
             <Skeleton key={i} variant="rounded" height={140} />
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div
+          className="gap-4"
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(240px, 320px))",
+            justifyContent: "start",
+            maxWidth: "100%",
+          }}
+        >
           {(departments ?? []).map((d) => (
             <DeptCard
               key={d.id}

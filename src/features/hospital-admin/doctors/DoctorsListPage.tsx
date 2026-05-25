@@ -21,7 +21,7 @@ import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { PageHeader } from "@/shared/components/PageHeader";
-import { StatusChip, DOCTOR_STATUS_TONE } from "@/shared/components/StatusChip";
+import { StatusChip, type StatusTone } from "@/shared/components/StatusChip";
 import { formatIst } from "@/shared/lib/datetime";
 import { getApiErrorMessage } from "@/shared/lib/apiError";
 import { useDepartments } from "../api/departments";
@@ -31,35 +31,52 @@ import {
   useUpdateDoctor,
   useDeactivateDoctor,
   useReactivateDoctor,
+  useSetDutyStatus,
   type ApiDoctor,
   type CreateDoctorInput,
+  type DutyStatus,
 } from "../api/doctors";
 import { DoctorDrawer } from "./components/DoctorDrawer";
+import { DoctorDetailDrawer } from "./components/DoctorDetailDrawer";
+
+const DUTY_LABEL: Record<DutyStatus, string> = {
+  active: "Active",
+  on_leave: "On Leave",
+  off_duty: "Off Duty",
+};
+const DUTY_TONE: Record<DutyStatus, StatusTone> = {
+  active: "success",
+  on_leave: "warning",
+  off_duty: "danger",
+};
 
 function RowMenu({
   isActive,
+  dutyStatus,
   onEdit,
   onToggle,
+  onSetDuty,
 }: {
   isActive: boolean;
+  dutyStatus: DutyStatus;
   onEdit: () => void;
   onToggle: () => void;
+  onSetDuty: (s: DutyStatus) => void;
 }) {
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
   return (
     <>
       <IconButton
         size="small"
-        onClick={(e) => setAnchor(e.currentTarget)}
+        onClick={(e) => {
+          e.stopPropagation();
+          setAnchor(e.currentTarget);
+        }}
         aria-label="Actions"
       >
         <MoreVertIcon fontSize="small" />
       </IconButton>
-      <Menu
-        anchorEl={anchor}
-        open={Boolean(anchor)}
-        onClose={() => setAnchor(null)}
-      >
+      <Menu anchorEl={anchor} open={Boolean(anchor)} onClose={() => setAnchor(null)}>
         <MenuItem
           onClick={() => {
             setAnchor(null);
@@ -68,6 +85,36 @@ function RowMenu({
         >
           Edit
         </MenuItem>
+        {isActive && dutyStatus !== "active" && (
+          <MenuItem
+            onClick={() => {
+              setAnchor(null);
+              onSetDuty("active");
+            }}
+          >
+            Mark Active
+          </MenuItem>
+        )}
+        {isActive && dutyStatus !== "on_leave" && (
+          <MenuItem
+            onClick={() => {
+              setAnchor(null);
+              onSetDuty("on_leave");
+            }}
+          >
+            Mark On Leave
+          </MenuItem>
+        )}
+        {isActive && dutyStatus !== "off_duty" && (
+          <MenuItem
+            onClick={() => {
+              setAnchor(null);
+              onSetDuty("off_duty");
+            }}
+          >
+            Mark Off Duty
+          </MenuItem>
+        )}
         <MenuItem
           onClick={() => {
             setAnchor(null);
@@ -87,6 +134,7 @@ export function DoctorsListPage() {
   const { enqueueSnackbar } = useSnackbar();
   const [drawerMode, setDrawerMode] = useState<"add" | "edit" | null>(null);
   const [selectedDoctor, setSelectedDoctor] = useState<ApiDoctor | null>(null);
+  const [detailDoctor, setDetailDoctor] = useState<ApiDoctor | null>(null);
 
   const q = params.get("q") ?? "";
   const deptId = params.get("dept") ?? "";
@@ -120,11 +168,11 @@ export function DoctorsListPage() {
   const updateMutation = useUpdateDoctor();
   const deactivateMutation = useDeactivateDoctor();
   const reactivateMutation = useReactivateDoctor();
+  const dutyMutation = useSetDutyStatus();
 
   const rows = data?.items ?? [];
   const hasFilters = Boolean(q || deptId || status);
-  const resetFilters = () =>
-    setParams(new URLSearchParams(), { replace: true });
+  const resetFilters = () => setParams(new URLSearchParams(), { replace: true });
 
   const handleSubmit = async (input: CreateDoctorInput) => {
     try {
@@ -146,15 +194,20 @@ export function DoctorsListPage() {
     try {
       if (doctor.deactivatedAt) {
         await reactivateMutation.mutateAsync(doctor.id);
-        enqueueSnackbar(`Reactivated ${doctor.fullName}.`, {
-          variant: "success",
-        });
+        enqueueSnackbar(`Reactivated ${doctor.fullName}.`, { variant: "success" });
       } else {
         await deactivateMutation.mutateAsync(doctor.id);
-        enqueueSnackbar(`Deactivated ${doctor.fullName}.`, {
-          variant: "success",
-        });
+        enqueueSnackbar(`Deactivated ${doctor.fullName}.`, { variant: "success" });
       }
+    } catch (err) {
+      enqueueSnackbar(getApiErrorMessage(err), { variant: "error" });
+    }
+  };
+
+  const handleSetDuty = async (doctor: ApiDoctor, s: DutyStatus) => {
+    try {
+      await dutyMutation.mutateAsync({ id: doctor.id, dutyStatus: s });
+      enqueueSnackbar(`${doctor.fullName} marked ${DUTY_LABEL[s]}.`, { variant: "success" });
     } catch (err) {
       enqueueSnackbar(getApiErrorMessage(err), { variant: "error" });
     }
@@ -169,12 +222,8 @@ export function DoctorsListPage() {
       renderCell: ({ row }) => (
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
           <Avatar
-            sx={{
-              width: 32,
-              height: 32,
-              bgcolor: "primary.main",
-              fontSize: 12,
-            }}
+            src={row.photoUrl ?? undefined}
+            sx={{ width: 32, height: 32, bgcolor: "primary.main", fontSize: 12 }}
           >
             {row.fullName
               .split(" ")
@@ -183,9 +232,7 @@ export function DoctorsListPage() {
               .join("")}
           </Avatar>
           <Box>
-            <Typography sx={{ fontSize: 14, fontWeight: 500 }}>
-              {row.fullName}
-            </Typography>
+            <Typography sx={{ fontSize: 14, fontWeight: 500 }}>{row.fullName}</Typography>
             <Typography
               sx={{
                 fontSize: 12,
@@ -206,12 +253,7 @@ export function DoctorsListPage() {
       minWidth: 160,
       valueGetter: (_v, row) => deptMap.get(row.departmentId) ?? "—",
     },
-    {
-      field: "specialisation",
-      headerName: "Specialisation",
-      flex: 1,
-      minWidth: 180,
-    },
+    { field: "specialisation", headerName: "Specialisation", flex: 1, minWidth: 180 },
     {
       field: "qualifications",
       headerName: "Qualifications",
@@ -226,11 +268,7 @@ export function DoctorsListPage() {
           <Tooltip title={qs.join(", ")}>
             <Typography sx={{ fontSize: 13 }}>
               {visible}
-              {rest && (
-                <Box component="span" sx={{ color: "text.secondary" }}>
-                  {rest}
-                </Box>
-              )}
+              {rest && <Box component="span" sx={{ color: "text.secondary" }}>{rest}</Box>}
             </Typography>
           </Tooltip>
         );
@@ -248,10 +286,11 @@ export function DoctorsListPage() {
       headerName: "Status",
       flex: 0.6,
       minWidth: 120,
-      valueGetter: (_v, row) => (row.deactivatedAt ? "Deactivated" : "Active"),
+      valueGetter: (_v, row) =>
+        row.deactivatedAt ? "Deactivated" : DUTY_LABEL[row.dutyStatus],
       renderCell: ({ row }) => {
-        const label = row.deactivatedAt ? "Deactivated" : "Active";
-        return <StatusChip label={label} tone={DOCTOR_STATUS_TONE[label]} />;
+        if (row.deactivatedAt) return <StatusChip label="Deactivated" tone="muted" />;
+        return <StatusChip label={DUTY_LABEL[row.dutyStatus]} tone={DUTY_TONE[row.dutyStatus]} />;
       },
     },
     {
@@ -266,11 +305,13 @@ export function DoctorsListPage() {
       renderCell: ({ row }) => (
         <RowMenu
           isActive={!row.deactivatedAt}
+          dutyStatus={row.dutyStatus}
           onEdit={() => {
             setSelectedDoctor(row);
             setDrawerMode("edit");
           }}
           onToggle={() => void handleToggle(row)}
+          onSetDuty={(s) => void handleSetDuty(row, s)}
         />
       ),
     },
@@ -296,16 +337,7 @@ export function DoctorsListPage() {
         }
       />
 
-      <Card
-        sx={{
-          p: 2,
-          mb: 2,
-          display: "flex",
-          alignItems: "center",
-          gap: 2,
-          flexWrap: "wrap",
-        }}
-      >
+      <Card sx={{ p: 2, mb: 2, display: "flex", alignItems: "center", gap: 2, flexWrap: "wrap" }}>
         <TextField
           value={q}
           onChange={(e) => setParam("q", e.target.value || null)}
@@ -325,9 +357,7 @@ export function DoctorsListPage() {
           size="small"
           label="Department"
           value={deptId || "all"}
-          onChange={(e) =>
-            setParam("dept", e.target.value === "all" ? null : e.target.value)
-          }
+          onChange={(e) => setParam("dept", e.target.value === "all" ? null : e.target.value)}
           sx={{ width: 220 }}
         >
           <MenuItem value="all">All</MenuItem>
@@ -342,9 +372,7 @@ export function DoctorsListPage() {
           size="small"
           label="Status"
           value={status ?? "all"}
-          onChange={(e) =>
-            setParam("status", e.target.value === "all" ? null : e.target.value)
-          }
+          onChange={(e) => setParam("status", e.target.value === "all" ? null : e.target.value)}
           sx={{ width: 150 }}
         >
           <MenuItem value="all">All</MenuItem>
@@ -375,11 +403,7 @@ export function DoctorsListPage() {
         <Alert
           severity="error"
           sx={{ mb: 2 }}
-          action={
-            <Button size="small" onClick={() => void refetch()}>
-              Retry
-            </Button>
-          }
+          action={<Button size="small" onClick={() => void refetch()}>Retry</Button>}
         >
           Failed to load doctors.
         </Alert>
@@ -387,9 +411,7 @@ export function DoctorsListPage() {
 
       {isLoading ? (
         <Card sx={{ p: 2 }}>
-          {[...Array(5)].map((_, i) => (
-            <Skeleton key={i} height={56} sx={{ mb: 1 }} />
-          ))}
+          {[...Array(5)].map((_, i) => <Skeleton key={i} height={56} sx={{ mb: 1 }} />)}
         </Card>
       ) : (
         <Card sx={{ overflow: "hidden" }}>
@@ -398,14 +420,18 @@ export function DoctorsListPage() {
             columns={columns}
             rowHeight={64}
             getRowId={(r) => r.id}
-            initialState={{
-              pagination: { paginationModel: { pageSize: 20, page: 0 } },
-            }}
+            initialState={{ pagination: { paginationModel: { pageSize: 20, page: 0 } } }}
             pageSizeOptions={[20, 50, 100]}
             disableRowSelectionOnClick
             autoHeight
+            onRowClick={(p, e) => {
+              const target = e.target as HTMLElement;
+              if (target.closest("button")) return;
+              setDetailDoctor(p.row as ApiDoctor);
+            }}
             sx={{
               border: "none",
+              cursor: "pointer",
               "& .MuiDataGrid-columnHeaderTitle": {
                 fontSize: 13,
                 fontWeight: 500,
@@ -415,22 +441,29 @@ export function DoctorsListPage() {
               },
               "& .MuiDataGrid-cell": { display: "flex", alignItems: "center" },
               "& .MuiDataGrid-row:hover": { bgcolor: "#FAFAFA" },
-              "& .MuiDataGrid-cell:focus, & .MuiDataGrid-cell:focus-within": {
-                outline: "none",
-              },
+              "& .MuiDataGrid-cell:focus, & .MuiDataGrid-cell:focus-within": { outline: "none" },
             }}
           />
         </Card>
       )}
 
       {!isLoading && (
-        <Typography
-          variant="caption"
-          sx={{ display: "block", mt: 1, color: "text.secondary" }}
-        >
+        <Typography variant="caption" sx={{ display: "block", mt: 1, color: "text.secondary" }}>
           Showing {rows.length} of {data?.total ?? 0}.
         </Typography>
       )}
+
+      <DoctorDetailDrawer
+        doctor={detailDoctor}
+        departmentName={detailDoctor ? deptMap.get(detailDoctor.departmentId) : undefined}
+        onClose={() => setDetailDoctor(null)}
+        onEdit={() => {
+          if (!detailDoctor) return;
+          setSelectedDoctor(detailDoctor);
+          setDetailDoctor(null);
+          setDrawerMode("edit");
+        }}
+      />
 
       <DoctorDrawer
         open={drawerMode !== null}
@@ -442,6 +475,15 @@ export function DoctorsListPage() {
           setSelectedDoctor(null);
         }}
         onSubmit={handleSubmit}
+        onDeactivate={
+          selectedDoctor && !selectedDoctor.deactivatedAt
+            ? () => {
+                void handleToggle(selectedDoctor);
+                setDrawerMode(null);
+                setSelectedDoctor(null);
+              }
+            : undefined
+        }
       />
     </>
   );

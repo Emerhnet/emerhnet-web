@@ -42,7 +42,7 @@ export function PublicShell({
     >
       <div className="flex-1 flex flex-col items-center justify-center px-4 py-12">
         <div className="flex flex-col items-center gap-3 mb-6">
-          <EmerhnetWordmark size={28} />
+          <EmerhnetWordmark size={56} />
           {showHeaderActions && (
             <div className="flex items-center gap-1">
               <Tooltip title="Help & support">
@@ -82,7 +82,7 @@ export function PublicShell({
             border: "1px solid",
             borderColor: "divider",
             boxShadow: "0 1px 2px rgba(15, 23, 42, 0.04)",
-            p: disableCardPadding ? 0 : 3,
+            p: disableCardPadding ? 0 : { xs: 2, sm: 3 },
             overflow: "hidden",
           }}
         >
@@ -96,8 +96,8 @@ export function PublicShell({
         )}
       </div>
 
-      <footer className="pb-6 pt-2 text-center">
-        <div className="flex justify-center gap-6 mb-2">
+      <footer className="pb-6 pt-2 text-center px-4">
+        <div className="flex flex-wrap justify-center gap-x-6 gap-y-1 mb-2">
           <Link
             href="#"
             underline="hover"
