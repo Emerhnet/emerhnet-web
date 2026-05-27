@@ -12,15 +12,19 @@ export const addressLocationSchema = z.object({
     .regex(/^\d{6}$/, "Pincode must be 6 digits"),
   latitude: z
     .string()
-    .min(1, "Latitude is required")
+    .optional()
+    .default("")
     .refine((v) => {
+      if (!v) return true;
       const n = Number(v);
       return !Number.isNaN(n) && n >= -90 && n <= 90;
     }, "Latitude must be between -90 and 90"),
   longitude: z
     .string()
-    .min(1, "Longitude is required")
+    .optional()
+    .default("")
     .refine((v) => {
+      if (!v) return true;
       const n = Number(v);
       return !Number.isNaN(n) && n >= -180 && n <= 180;
     }, "Longitude must be between -180 and 180"),

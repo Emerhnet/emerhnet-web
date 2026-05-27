@@ -19,6 +19,9 @@ import EditIcon from "@mui/icons-material/Edit";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import PlayCircleIcon from "@mui/icons-material/PlayCircle";
 import DescriptionIcon from "@mui/icons-material/Description";
+import BloodtypeIcon from "@mui/icons-material/Bloodtype";
+import WarningAmberIcon from "@mui/icons-material/WarningAmber";
+import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import MedicalServicesIcon from "@mui/icons-material/MedicalServices";
 import DirectionsRunIcon from "@mui/icons-material/DirectionsRun";
 import BuildIcon from "@mui/icons-material/Build";
@@ -41,6 +44,7 @@ import {
   useHospitalDepartments,
   useHospitalBeds,
   useHospitalAmbulances,
+  useHospitalBloodBank,
   useHospitalDocumentUrl,
   type ApiHospital,
   type ApiHospitalStatus,
@@ -53,6 +57,7 @@ const TAB_LABELS = [
   "Departments",
   "Beds",
   "Ambulances",
+  "Blood Bank",
   "Documents",
   "Audit Log",
 ];
@@ -851,6 +856,216 @@ function AmbulancesTab({ hospitalId }: { hospitalId: string }) {
   );
 }
 
+type BloodBankTone = "ok" | "low" | "empty";
+const BLOOD_TONE: Record<
+  BloodBankTone,
+  { bg: string; fg: string; rail: string; label: string; Icon: typeof CheckCircleIcon }
+> = {
+  ok: {
+    bg: "#D1E7DD",
+    fg: "#0F5132",
+    rail: "#0F5132",
+    label: "Sufficient",
+    Icon: CheckCircleIcon,
+  },
+  low: {
+    bg: "#FFF3CD",
+    fg: "#8B5A00",
+    rail: "#8B5A00",
+    label: "Low stock",
+    Icon: WarningAmberIcon,
+  },
+  empty: {
+    bg: "#F8D7DA",
+    fg: "#842029",
+    rail: "#842029",
+    label: "Out of stock",
+    Icon: ErrorOutlineIcon,
+  },
+};
+
+function bloodToneFor(units: number, threshold: number): BloodBankTone {
+  if (units === 0) return "empty";
+  if (units <= threshold) return "low";
+  return "ok";
+}
+
+function BloodBankTab({ hospitalId }: { hospitalId: string }) {
+  const { data, isLoading, isError, refetch } = useHospitalBloodBank(hospitalId);
+  if (isError)
+    return (
+      <Alert
+        severity="error"
+        action={<Button size="small" onClick={() => void refetch()}>Retry</Button>}
+      >
+        Failed to load blood bank.
+      </Alert>
+    );
+  if (isLoading) return <Skeleton variant="rounded" height={240} />;
+  const rows = data?.items ?? [];
+  const totals = data?.totals ?? { totalUnits: 0, criticalCount: 0, emptyCount: 0 };
+
+  return (
+    <>
+      <Box sx={{ display: "flex", gap: 2, mb: 3, flexWrap: "wrap" }}>
+        <Card sx={{ p: 2, flex: 1, minWidth: 180 }}>
+          <Typography
+            variant="caption"
+            sx={{
+              color: "text.secondary",
+              textTransform: "uppercase",
+              letterSpacing: "0.06em",
+              fontWeight: 600,
+            }}
+          >
+            Total Units
+          </Typography>
+          <Typography sx={{ fontSize: 28, fontWeight: 700 }}>{totals.totalUnits}</Typography>
+        </Card>
+        <Card sx={{ p: 2, flex: 1, minWidth: 180 }}>
+          <Typography
+            variant="caption"
+            sx={{
+              color: "text.secondary",
+              textTransform: "uppercase",
+              letterSpacing: "0.06em",
+              fontWeight: 600,
+            }}
+          >
+            Low Stock Groups
+          </Typography>
+          <Typography sx={{ fontSize: 28, fontWeight: 700, color: "#8B5A00" }}>
+            {totals.criticalCount}
+          </Typography>
+        </Card>
+        <Card sx={{ p: 2, flex: 1, minWidth: 180 }}>
+          <Typography
+            variant="caption"
+            sx={{
+              color: "text.secondary",
+              textTransform: "uppercase",
+              letterSpacing: "0.06em",
+              fontWeight: 600,
+            }}
+          >
+            Out Of Stock
+          </Typography>
+          <Typography sx={{ fontSize: 28, fontWeight: 700, color: "#842029" }}>
+            {totals.emptyCount}
+          </Typography>
+        </Card>
+      </Box>
+      {rows.length === 0 ? (
+        <Card sx={{ p: 4, textAlign: "center" }}>
+          <Typography variant="body2" sx={{ color: "text.secondary" }}>
+            No blood stock configured.
+          </Typography>
+        </Card>
+      ) : (
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(240px, 320px))",
+            gap: 2,
+            justifyContent: "start",
+          }}
+        >
+          {rows.map((b) => {
+            const units = Number(b.unitsAvailable ?? 0);
+            const thresh = Number(b.criticalThreshold ?? 0);
+            const t = BLOOD_TONE[bloodToneFor(units, thresh)];
+            const Icon = t.Icon;
+            return (
+              <Card
+                key={String(b.id)}
+                sx={{
+                  position: "relative",
+                  p: 2.5,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 1.5,
+                  overflow: "hidden",
+                  "&::before": {
+                    content: '""',
+                    position: "absolute",
+                    left: 0,
+                    top: 12,
+                    bottom: 12,
+                    width: 4,
+                    borderRadius: 999,
+                    bgcolor: t.rail,
+                  },
+                }}
+              >
+                <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1.5 }}>
+                  <Box
+                    sx={{
+                      width: 48,
+                      height: 48,
+                      borderRadius: 1,
+                      bgcolor: t.bg,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: 0,
+                    }}
+                  >
+                    <BloodtypeIcon sx={{ fontSize: 28, color: t.fg }} />
+                  </Box>
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Typography sx={{ fontSize: 22, fontWeight: 700, lineHeight: 1.1 }}>
+                      {String(b.bloodGroup)}
+                    </Typography>
+                    <Box sx={{ display: "inline-flex", alignItems: "center", gap: 0.5, mt: 0.5 }}>
+                      <Icon sx={{ fontSize: 14, color: t.fg }} />
+                      <Typography
+                        sx={{
+                          fontSize: 11,
+                          fontWeight: 600,
+                          color: t.fg,
+                          textTransform: "uppercase",
+                          letterSpacing: "0.06em",
+                        }}
+                      >
+                        {t.label}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Box>
+                <Box sx={{ display: "flex", alignItems: "baseline", gap: 1 }}>
+                  <Typography sx={{ fontSize: 36, fontWeight: 700, color: t.fg, lineHeight: 1 }}>
+                    {units}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: "text.secondary" }}>
+                    units available
+                  </Typography>
+                </Box>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    pt: 1,
+                    borderTop: "1px solid",
+                    borderColor: "divider",
+                  }}
+                >
+                  <Typography variant="caption" sx={{ color: "text.secondary" }}>
+                    Threshold: {thresh}
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: "text.secondary" }}>
+                    {b.updatedAt ? formatIst(String(b.updatedAt), "dd MMM yyyy") : ""}
+                  </Typography>
+                </Box>
+              </Card>
+            );
+          })}
+        </Box>
+      )}
+    </>
+  );
+}
+
 function DocumentsTab({ hospital }: { hospital: ApiHospital }) {
   if (!hospital.documents || hospital.documents.length === 0) {
     return (
@@ -1102,8 +1317,9 @@ export function HospitalDetailPage() {
       {tab === 2 && <DepartmentsTab hospitalId={hospital.id} />}
       {tab === 3 && <BedsTab hospitalId={hospital.id} />}
       {tab === 4 && <AmbulancesTab hospitalId={hospital.id} />}
-      {tab === 5 && <DocumentsTab hospital={hospital} />}
-      {tab === 6 && <PlaceholderTab label="Audit Log" />}
+      {tab === 5 && <BloodBankTab hospitalId={hospital.id} />}
+      {tab === 6 && <DocumentsTab hospital={hospital} />}
+      {tab === 7 && <PlaceholderTab label="Audit Log" />}
 
       <SuspendDialog
         open={suspendOpen}

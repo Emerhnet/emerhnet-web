@@ -214,6 +214,24 @@ export function useHospitalAmbulances(hospitalId: string) {
   });
 }
 
+export function useHospitalBloodBank(hospitalId: string) {
+  return useQuery({
+    queryKey: [...hospitalKeys.detail(hospitalId), "bloodbank"] as const,
+    queryFn: async () => {
+      const { data } = await api.get<{
+        items: Record<string, unknown>[];
+        totals: {
+          totalUnits: number;
+          criticalCount: number;
+          emptyCount: number;
+        };
+      }>(`/hospitals/${hospitalId}/bloodbank`);
+      return data;
+    },
+    enabled: Boolean(hospitalId),
+  });
+}
+
 export function useHospitalDocumentUrl(
   hospitalId: string,
   slotKey: string,

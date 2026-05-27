@@ -10,6 +10,7 @@ import SettingsIcon from "@mui/icons-material/Settings";
 import PersonIcon from "@mui/icons-material/Person";
 import GroupsIcon from "@mui/icons-material/Groups";
 import HotelIcon from "@mui/icons-material/Hotel";
+import BloodtypeIcon from "@mui/icons-material/Bloodtype";
 
 export type NavItem =
   | {
@@ -89,6 +90,12 @@ export const HOSPITAL_ADMIN_NAV: NavItem[] = [
     label: "Ambulances",
     to: "/hospital/ambulances",
     icon: LocalShippingIcon,
+  },
+  {
+    kind: "link",
+    label: "Blood Bank",
+    to: "/hospital/bloodbank",
+    icon: BloodtypeIcon,
   },
   {
     kind: "link",

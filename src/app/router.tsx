@@ -28,6 +28,7 @@ import { DepartmentsPage } from "@/features/hospital-admin/departments/Departmen
 import { DoctorsListPage } from "@/features/hospital-admin/doctors/DoctorsListPage";
 import { BedsPage } from "@/features/hospital-admin/beds/BedsPage";
 import { AmbulancesPage } from "@/features/hospital-admin/ambulances/AmbulancesPage";
+import { BloodBankPage } from "@/features/hospital-admin/bloodbank/BloodBankPage";
 
 const HospitalAuditLogPage = lazy(
   () => import("@/features/hospital-admin/audit-log/AuditLogPage"),
@@ -120,6 +121,7 @@ export const router = createBrowserRouter([
       { path: "doctors", element: <DoctorsListPage /> },
       { path: "beds", element: <BedsPage /> },
       { path: "ambulances", element: <AmbulancesPage /> },
+      { path: "bloodbank", element: <BloodBankPage /> },
       {
         path: "audit-log",
         element: (

@@ -1,4 +1,5 @@
-﻿import { Controller, useForm, useWatch } from "react-hook-form";
+﻿import { useEffect, useState } from "react";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router-dom";
 import { useSnackbar } from "notistack";
@@ -7,9 +8,11 @@ import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import Autocomplete from "@mui/material/Autocomplete";
+import CircularProgress from "@mui/material/CircularProgress";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import MapIcon from "@mui/icons-material/Map";
 import MyLocationIcon from "@mui/icons-material/MyLocation";
+import SearchIcon from "@mui/icons-material/Search";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import { INDIAN_STATES } from "@/shared/constants/indianStates";
@@ -18,6 +21,24 @@ import {
   type AddressLocationInput,
 } from "../schemas/addressLocationSchema";
 import { useRegistrationStore } from "../store";
+
+type NominatimResult = {
+  place_id: number;
+  display_name: string;
+  lat: string;
+  lon: string;
+  address?: {
+    road?: string;
+    house_number?: string;
+    suburb?: string;
+    neighbourhood?: string;
+    city?: string;
+    town?: string;
+    village?: string;
+    state?: string;
+    postcode?: string;
+  };
+};
 
 function FieldLabel({
   htmlFor,
@@ -95,6 +116,58 @@ export function AddressLocationStep() {
           variant: "error",
         }),
     );
+  };
+
+  const [searchInput, setSearchInput] = useState("");
+  const [searchOptions, setSearchOptions] = useState<NominatimResult[]>([]);
+  const [searching, setSearching] = useState(false);
+
+  useEffect(() => {
+    const q = searchInput.trim();
+    if (q.length < 3) {
+      setSearchOptions([]);
+      return;
+    }
+    let cancelled = false;
+    const t = setTimeout(async () => {
+      setSearching(true);
+      try {
+        const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&addressdetails=1&limit=7&countrycodes=in`;
+        const res = await fetch(url, {
+          headers: { Accept: "application/json" },
+        });
+        if (!res.ok) throw new Error("Search failed");
+        const data: NominatimResult[] = await res.json();
+        if (!cancelled) setSearchOptions(data);
+      } catch {
+        if (!cancelled) setSearchOptions([]);
+      } finally {
+        if (!cancelled) setSearching(false);
+      }
+    }, 400);
+    return () => {
+      cancelled = true;
+      clearTimeout(t);
+    };
+  }, [searchInput]);
+
+  const applySearchResult = (r: NominatimResult) => {
+    setValue("latitude", parseFloat(r.lat).toFixed(6), { shouldValidate: true });
+    setValue("longitude", parseFloat(r.lon).toFixed(6), { shouldValidate: true });
+    const a = r.address ?? {};
+    const line1 = [a.house_number, a.road].filter(Boolean).join(" ").trim() ||
+      [a.suburb, a.neighbourhood].filter(Boolean).join(", ");
+    if (line1) setValue("addressLine1", line1, { shouldValidate: true });
+    const city = a.city ?? a.town ?? a.village;
+    if (city) setValue("city", city, { shouldValidate: true });
+    if (a.state && (INDIAN_STATES as readonly string[]).includes(a.state)) {
+      setValue("state", a.state as AddressLocationInput["state"], {
+        shouldValidate: true,
+      });
+    }
+    if (a.postcode && /^\d{6}$/.test(a.postcode)) {
+      setValue("pincode", a.postcode, { shouldValidate: true });
+    }
   };
 
   return (
@@ -227,46 +300,72 @@ export function AddressLocationStep() {
           </Typography>
         </Box>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-2">
-          <div>
-            <FieldLabel htmlFor="latitude" required>
-              Latitude
-            </FieldLabel>
-            <Controller
-              name="latitude"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  id="latitude"
-                  placeholder="19.0760"
-                  inputProps={{ inputMode: "decimal" }}
-                  error={!!errors.latitude}
-                  helperText={errors.latitude?.message}
-                />
-              )}
-            />
-          </div>
-          <div>
-            <FieldLabel htmlFor="longitude" required>
-              Longitude
-            </FieldLabel>
-            <Controller
-              name="longitude"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  id="longitude"
-                  placeholder="72.8777"
-                  inputProps={{ inputMode: "decimal" }}
-                  error={!!errors.longitude}
-                  helperText={errors.longitude?.message}
-                />
-              )}
-            />
-          </div>
-        </div>
+        <Box sx={{ mb: 2 }}>
+          <FieldLabel>Search for your hospital location</FieldLabel>
+          <Autocomplete
+            freeSolo
+            filterOptions={(x) => x}
+            options={searchOptions}
+            getOptionLabel={(o) => (typeof o === "string" ? o : o.display_name)}
+            inputValue={searchInput}
+            onInputChange={(_, v) => setSearchInput(v)}
+            onChange={(_, v) => {
+              if (v && typeof v !== "string") applySearchResult(v);
+            }}
+            loading={searching}
+            noOptionsText={
+              searchInput.length < 3
+                ? "Type at least 3 characters"
+                : "No matches"
+            }
+            renderOption={(props, option) => {
+              const { key, ...rest } = props as React.HTMLAttributes<HTMLLIElement> & {
+                key?: React.Key;
+              };
+              return (
+                <Box
+                  component="li"
+                  key={key as React.Key}
+                  {...rest}
+                  sx={{ display: "flex", alignItems: "flex-start", gap: 1.25 }}
+                >
+                  <LocationOnIcon
+                    sx={{ fontSize: 18, color: "primary.main", mt: 0.25 }}
+                  />
+                  <Typography sx={{ fontSize: 13, lineHeight: 1.4 }}>
+                    {option.display_name}
+                  </Typography>
+                </Box>
+              );
+            }}
+            renderInput={(p) => (
+              <TextField
+                {...p}
+                placeholder="e.g. AIIMS Delhi, Sassoon Hospital Pune"
+                helperText="Pick from suggestions to auto-fill address and coordinates."
+                InputProps={{
+                  ...p.InputProps,
+                  startAdornment: (
+                    <SearchIcon
+                      fontSize="small"
+                      sx={{ color: "text.secondary", mr: 0.5 }}
+                    />
+                  ),
+                  endAdornment: (
+                    <>
+                      {searching ? <CircularProgress size={16} /> : null}
+                      {p.InputProps.endAdornment}
+                    </>
+                  ),
+                }}
+              />
+            )}
+          />
+        </Box>
+
+        {/* lat/lng tracked in form state, set via search/GPS. Hidden from UI. */}
+        <Controller name="latitude" control={control} render={({ field }) => <input type="hidden" {...field} />} />
+        <Controller name="longitude" control={control} render={({ field }) => <input type="hidden" {...field} />} />
 
         <Box
           sx={{
